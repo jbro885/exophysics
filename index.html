@@ -1,13 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
+        <meta charset="utf-8">
+        <title>Game</title>
         <style type="text/css">
+            html {
+                background: linear-gradient(0deg, #000, rgba(0,0,0,0.5)),
+                            linear-gradient(90deg, #000, #77f, #000);
+                background-attachment: fixed;
+            }
             body {
+                min-height: 100vh;
+                padding: 0 1em;
+                margin: 0;
+            }
+            #canvas {
+                margin: 10pt;
+                height: 600px;
+                width: 800px;
                 background: #000;
+                box-shadow: 0 0 5px black;
             }
         </style>
     </head>
     <body>
+        <center>
+            <canvas id="canvas"></canvas>
+        </center>
+        <script src="lib/gl-matrix.js"></script>
         <script src="script.js"></script>
     </body>
 </html>
