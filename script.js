@@ -37,7 +37,10 @@ function main() {
   const fsSource = `
     varying lowp vec4 vColor;
     void main(void) {
-      gl_FragColor = vColor;
+      lowp vec4 foo = vec4(1.0, 1.0, 1.0, 1.0);
+      foo.r = vColor.r;
+      foo.g = vColor.b;
+      gl_FragColor = foo;
     }
   `;
 
@@ -104,7 +107,7 @@ function initBuffers(gl) {
   // Now set up the colors for the vertices
 
   var colors = [
-    1.0,  1.0,  1.0,  1.0,    // white
+    0.0,  1.0,  1.0,  1.0,    // cyan
     1.0,  0.0,  0.0,  1.0,    // red
     0.0,  1.0,  0.0,  1.0,    // green
     0.0,  0.0,  1.0,  1.0,    // blue
