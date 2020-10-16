@@ -1,6 +1,6 @@
 "use strict";
 
-// copy&paste from https://github.com/mdn/webgl-examples/tree/gh-pages/tutorial/sample3
+// copy&paste from https://github.com/mdn/webgl-examples/tree/gh-pages/tutorial/sample3, with edits
 
 main();
 
@@ -18,8 +18,8 @@ function main() {
     return;
   }
 
-  const vsSource = document.getElementById("vertex-shader").text;
-  const fsSource = document.getElementById("fragment-shader").text;
+  const vsSource = document.getElementById("vertex-shader").text.trim();
+  const fsSource = document.getElementById("fragment-shader").text.trim();
 
   // Initialize a shader program; this is where all the lighting
   // for the vertices and so forth is established.
