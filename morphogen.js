@@ -3,40 +3,19 @@
 main();
 
 function main() {
-  const canvas = document.querySelector('#canvas');
-  const gl = canvas.getContext('webgl2');
+    const [gl, shaders] = initializeWebGL();
 
-  if (!gl) {
-    alert('Unable to initialize WebGL. Your browser or machine may not support it.');
-    return;
-  }
+    // Here's where we call the routine that builds all the
+    // objects we'll be drawing.
+    const buffers = initBuffers(gl);
 
-  const vertexShaderSource = document.getElementById("vertex-shader").text
-  const fragmentShaderSource = document.getElementById("fragment-shader").text
-  const shaderProgram = createProgram(gl, vertexShaderSource, fragmentShaderSource);
+    // Draw the scene
+    drawScene(gl, shaders, buffers);
+}
 
-  // Collect all the info needed to use the shader program.
-  // Look up which attributes our shader program is using
-  // for aVertexPosition, aVevrtexColor and also
-  // look up uniform locations.
-  const programInfo = {
-    program: shaderProgram,
-    attribLocations: {
-      vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-      vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
-    },
-    uniformLocations: {
-      projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-      modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-    },
-  };
-
-  // Here's where we call the routine that builds all the
-  // objects we'll be drawing.
-  const buffers = initBuffers(gl);
-
-  // Draw the scene
-  drawScene(gl, programInfo, buffers);
+class Particle {
+    constructor() {
+    }
 }
 
 //
