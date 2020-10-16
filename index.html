@@ -26,25 +26,26 @@
     </head>
     <body>
         <canvas id="canvas"></canvas>
-        <script type="x-shader/x-vertex" id="vertex-shader">
-            attribute vec4 aVertexPosition;
-            attribute vec4 aVertexColor;
+        <script type="x-shader/x-vertex" id="vertex-shader">#version 300 es
+            in vec4 aVertexPosition;
+            in vec4 aVertexColor;
             uniform mat4 uModelViewMatrix;
             uniform mat4 uProjectionMatrix;
-            varying lowp vec4 vColor;
+            out lowp vec4 vColor;
 
-            void main(void) {
+            void main() {
                 gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
                 vColor = aVertexColor;
             }
         </script>
-        <script type="x-shader/x-fragment" id="fragment-shader">
-            varying lowp vec4 vColor;
-            void main(void) {
-                lowp vec4 foo = vec4(1.0, 1.0, 1.0, 1.0);
-                foo.r = vColor.r;
-                foo.g = vColor.b;
-                gl_FragColor = foo;
+        <script type="x-shader/x-fragment" id="fragment-shader">#version 300 es
+            precision highp float;
+            in vec4 vColor;
+            out vec4 outColor;
+            void main() {
+                outColor = vec4(1.0, 1.0, 1.0, 1.0);
+                outColor.r = vColor.r;
+                outColor.g = vColor.b;
             }
         </script>
         <script src="lib/gl-matrix.js"></script>

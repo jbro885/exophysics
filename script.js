@@ -9,7 +9,7 @@ main();
 //
 function main() {
   const canvas = document.querySelector('#canvas');
-  const gl = canvas.getContext('webgl');
+  const gl = canvas.getContext('webgl2');
 
   // If we don't have a GL context, give up now
 
