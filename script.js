@@ -18,31 +18,8 @@ function main() {
     return;
   }
 
-  // Vertex shader program
-
-  const vsSource = `
-    attribute vec4 aVertexPosition;
-    attribute vec4 aVertexColor;
-    uniform mat4 uModelViewMatrix;
-    uniform mat4 uProjectionMatrix;
-    varying lowp vec4 vColor;
-    void main(void) {
-      gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-      vColor = aVertexColor;
-    }
-  `;
-
-  // Fragment shader program
-
-  const fsSource = `
-    varying lowp vec4 vColor;
-    void main(void) {
-      lowp vec4 foo = vec4(1.0, 1.0, 1.0, 1.0);
-      foo.r = vColor.r;
-      foo.g = vColor.b;
-      gl_FragColor = foo;
-    }
-  `;
+  const vsSource = document.getElementById("vertex-shader").text;
+  const fsSource = document.getElementById("fragment-shader").text;
 
   // Initialize a shader program; this is where all the lighting
   // for the vertices and so forth is established.
