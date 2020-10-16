@@ -57,6 +57,8 @@ function drawScene(gl, programInfo, buffers) {
     // Clear the canvas before we start drawing on it.
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    const vao = gl.createVertexArray();
+    gl.bindVertexArray(vao);
 
     // Tell WebGL how to pull out the positions from the position
     // buffer into the vertexPosition attribute
