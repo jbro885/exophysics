@@ -4,12 +4,7 @@ main();
 
 function main() {
     const [gl, shaders] = initializeWebGL();
-
-    // Here's where we call the routine that builds all the
-    // objects we'll be drawing.
     const buffers = initBuffers(gl);
-
-    // Draw the scene
     drawScene(gl, shaders, buffers);
 }
 
