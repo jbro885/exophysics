@@ -24,8 +24,6 @@ function initializeWebGL() {
             vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
         },
         uniformLocations: {
-            projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-            modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
         },
     };
     return [gl, programInfo];

@@ -30,12 +30,10 @@
             #version 300 es
             in vec4 aVertexPosition;
             in vec4 aVertexColor;
-            uniform mat4 uModelViewMatrix;
-            uniform mat4 uProjectionMatrix;
             out lowp vec4 vColor;
 
             void main() {
-                gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+                gl_Position = aVertexPosition;
                 vColor = aVertexColor;
             }
         </script>
@@ -50,7 +48,6 @@
                 outColor.g = vColor.b;
             }
         </script>
-        <script src="lib/gl-matrix.js"></script>
         <script src="plumbing.js"></script>
         <script src="morphogen.js"></script>
     </body>
