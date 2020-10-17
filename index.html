@@ -79,7 +79,11 @@
                 color.g = 1.0 - (color.r + color.b) / 2.0;
                 color.a = 1.0;
                 if (mouse.z > 0.0) {
-                    color.xyz = mouse.zyx;
+                    float dist = distance(newPos.xy, mouse.xy);
+                    if (dist < 0.3) {
+                        newV.x *= 1.0 - (0.3 - dist);
+                        newV.y *= 1.0 - (0.3 - dist);
+                    }
                 }
 
                 gl_Position.xy = newPos.xy;
