@@ -80,7 +80,7 @@
             out vec4 outColor;
             void main() { outColor = color; }
         </script>
-        <script type="application/javascript">
+        <script type="application/javascript" id="boilerplate">
             "use strict";
 
             main(options);
@@ -95,8 +95,9 @@
                 options.particleLimit = Math.min(options.particleLimit,
                     gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS))
                 const shaderInfo = initShaders(gl);
-                const buffers = initBuffers(gl, options);
-                drawScene(gl, shaderInfo, buffers, options);
+                const buffers = initBuffers(gl, shaderInfo, options);
+                gl.useProgram(shaderInfo.program);
+                nextFrame(gl, shaderInfo, buffers, options);
             }
 
             function initShaders(gl) {
@@ -147,12 +148,24 @@
                 return shaderProgram;
             }
 
-            function initBuffers(gl, options) {
+            function initBuffers(gl, shaderInfo, options) {
+                const vao = gl.createVertexArray();
+                gl.bindVertexArray(vao);
+
                 // initiate with random positions
                 const oldPos = [...Array(options.particleLimit * 2)].map(_=>Math.random() * 2 - 1);
                 const oldPosBuffer = gl.createBuffer();
+
+                var size = 2;
+                var type = gl.FLOAT;
+                var normalize = false;
+                var stride = 0;
+                var offset = 0;
                 gl.bindBuffer(gl.ARRAY_BUFFER, oldPosBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oldPos), gl.DYNAMIC_DRAW);
+                gl.vertexAttribPointer(shaderInfo.attribLocations.oldPos,
+                    size, type, normalize, stride, offset);
+                gl.enableVertexAttribArray(shaderInfo.attribLocations.oldPos);
 
                 // initiate with random velocity
                 const oldV = [...Array(options.particleLimit * 2)].map(_=>(Math.random() * 2 - 1) * 0.005);
@@ -160,19 +173,35 @@
                 gl.bindBuffer(gl.ARRAY_BUFFER, oldVBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oldV), gl.DYNAMIC_DRAW);
 
-                var currentIndex = [];
-                var i;
-                for (i = 0; i < options.particleLimit; i++) {
-                    currentIndex[i] = i;
-                }
+                var size = 2;
+                var type = gl.FLOAT;
+                var normalize = false;
+                var stride = 0;
+                var offset = 0;
+                gl.vertexAttribPointer(shaderInfo.attribLocations.oldV,
+                    size, type, normalize, stride, offset);
+                gl.enableVertexAttribArray(shaderInfo.attribLocations.oldV);
+
+                // currentIndex is simply [0, 1, 2, ...]
+                const currentIndex = [...Array(options.particleLimit)].map((val,key) => key)
                 const currentIndexBuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, currentIndexBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Int32Array(currentIndex), gl.STATIC_DRAW);
+
+                var size = 1;
+                var type = gl.INT;
+                var normalize = false;
+                var stride = 0;
+                var offset = 0;
+                gl.vertexAttribIPointer(shaderInfo.attribLocations.currentIndex,
+                    size, type, normalize, stride, offset);
+                gl.enableVertexAttribArray(shaderInfo.attribLocations.currentIndex);
 
                 var newPosBuffer = gl.createBuffer();
                 var newVBuffer = gl.createBuffer();
 
                 return {
+                    vao: vao,
                     oldPos: oldPosBuffer,
                     oldV: oldVBuffer,
                     newPos: newPosBuffer,
@@ -181,52 +210,10 @@
                 };
             }
 
-            function drawScene(gl, programInfo, buffers, options) {
-                gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-                gl.clearDepth(1.0);                 // Clear everything
-                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            function nextFrame(gl, shaderInfo, buffers, options) {
+                gl.clearColor(0.0, 0.0, 0.0, 1.0);
+                gl.clear(gl.COLOR_BUFFER_BIT);
 
-                const vao = gl.createVertexArray();
-                gl.bindVertexArray(vao);
-
-                var size = 2;
-                var type = gl.FLOAT;
-                var normalize = false;
-                var stride = 0;
-                var offset = 0;
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldPos);
-                gl.vertexAttribPointer(programInfo.attribLocations.oldPos,
-                    size, type, normalize, stride, offset);
-                gl.enableVertexAttribArray(programInfo.attribLocations.oldPos);
-
-                // TODO: pass all positions on first frame too.
-
-                var size = 2;
-                var type = gl.FLOAT;
-                var normalize = false;
-                var stride = 0;
-                var offset = 0;
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldV);
-                gl.vertexAttribPointer(programInfo.attribLocations.oldV,
-                    size, type, normalize, stride, offset);
-                gl.enableVertexAttribArray(programInfo.attribLocations.oldV);
-
-                var size = 1;
-                var type = gl.INT;
-                var normalize = false;
-                var stride = 0;
-                var offset = 0;
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.currentIndex);
-                gl.vertexAttribIPointer(programInfo.attribLocations.currentIndex,
-                    size, type, normalize, stride, offset);
-                gl.enableVertexAttribArray(programInfo.attribLocations.currentIndex);
-
-                gl.useProgram(programInfo.program);
-
-                nextFrame(gl, programInfo, buffers, options);
-            }
-
-            function nextFrame(gl, programInfo, buffers, options) {
                 var emptyDataArray = new Float32Array(options.particleLimit * 2);
                 var emptyDataArray2 = new Float32Array(options.particleLimit * 2);
 
@@ -269,7 +256,7 @@
                         gl.bufferData(gl.ARRAY_BUFFER, output, gl.DYNAMIC_DRAW);
 
                         // update the "allPositions" uniform
-                        gl.uniform2fv(programInfo.uniformLocations.allPositions, output);
+                        gl.uniform2fv(shaderInfo.uniformLocations.allPositions, output);
 
                         // copy the previous "newV" values to the current "oldV"
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newV);
@@ -277,7 +264,7 @@
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldV);
                         gl.bufferData(gl.ARRAY_BUFFER, output, gl.DYNAMIC_DRAW);
 
-                        nextFrame(gl, programInfo, buffers, options);
+                        nextFrame(gl, shaderInfo, buffers, options);
                     } else {
                         setTimeout(waitForResult);
                     }
