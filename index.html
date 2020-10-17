@@ -22,7 +22,7 @@
 
             // data transfer variables
             uniform vec4 allPositions[particleLimit];
-            uniform vec4 mouse;
+            uniform vec4 mouse; /* (x, y, (pressed ? 1.0 : 0.0), 0.0) */
             in vec4 oldPos;
             in vec4 oldV;
             in int currentIndex;
