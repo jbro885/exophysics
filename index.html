@@ -103,10 +103,38 @@
                     gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS))
                 param.fpsCounter = 0;
                 param.fpsTime = 0;
+                param.mouseX = 0;
+                param.mouseY = 0;
+                param.mouseDown = false;
 
+                initUI(gl, param);
                 const shaderInfo = initShaders(gl);
                 const buffers = initBuffers(gl, shaderInfo, param);
                 drawScene(gl, shaderInfo, buffers, param);
+            }
+
+            function initUI(gl, param) {
+                gl.canvas.addEventListener('mousemove', function(e) {
+                    const rect = canvas.getBoundingClientRect();
+                    param.mouseX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
+                    param.mouseY = (e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1;
+                });
+                gl.canvas.addEventListener('mousedown', function(e) {
+                    const rect = canvas.getBoundingClientRect();
+                    param.mouseX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
+                    param.mouseY = (e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1;
+                    if (e.button == 0) {
+                        param.mouseDown = true;
+                    }
+                });
+                gl.canvas.addEventListener('mouseup', function(e) {
+                    const rect = canvas.getBoundingClientRect();
+                    param.mouseX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
+                    param.mouseY = (e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1;
+                    if (e.button == 0) {
+                        param.mouseDown = false;
+                    }
+                });
             }
 
             function initShaders(gl) {
