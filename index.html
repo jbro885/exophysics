@@ -39,7 +39,7 @@
                     particle_pos = allPositions[i];
                     center_of_mass += particle_pos;
                 }
-                center_of_mass /= float(particleLimit) * 1.1;
+                center_of_mass /= float(particleLimit);
                 vec4 dist = allPositions[currentIndex] - center_of_mass;
 
                 newPos = oldPos;
