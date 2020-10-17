@@ -27,7 +27,7 @@
 
             // data transfer variables
             uniform vec4 allPositions[particleLimit];
-            uniform vec4 mouse; /* (x, y, (pressed ? 1.0 : 0.0), 0.0) */
+            uniform vec4 pointer; /* (x, y, (pressed ? 1.0 : 0.0), 0.0) */
             in vec4 oldPos;
             in vec4 oldV;
             in int currentIndex;
@@ -82,8 +82,8 @@
                 color.g = 1.0 - (color.r + color.b) / 2.0;
                 color.a = 1.0;
 
-                if (mouse.z > 0.0) {
-                    float dist = distance(newPos.xy, mouse.xy);
+                if (pointer.z > 0.0) {
+                    float dist = distance(newPos.xy, pointer.xy);
                     if (dist <= pointerRadius) {
                         dist /= pointerRadius;
                         newV.x *= 1.0 - pointerSlowFactor * (1.0 - dist);
@@ -125,9 +125,9 @@
                     gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS) - param.extraUniforms);
                 param.fpsCounter = 0;
                 param.fpsTime = 0;
-                param.mouseX = 0;
-                param.mouseY = 0;
-                param.mouseDown = false;
+                param.pointerX = 0;
+                param.pointerY = 0;
+                param.pointerDown = false;
 
                 initUI(gl, param);
                 const shaderInfo = initShaders(gl);
@@ -138,24 +138,24 @@
             function initUI(gl, param) {
                 gl.canvas.addEventListener('pointermove', function(e) {
                     const rect = canvas.getBoundingClientRect();
-                    param.mouseX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
-                    param.mouseY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
+                    param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
+                    param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
                 });
                 gl.canvas.addEventListener('pointerdown', function(e) {
                     const rect = canvas.getBoundingClientRect();
-                    param.mouseX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
-                    param.mouseY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
+                    param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
+                    param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
                     if (e.button == 0) {
-                        param.mouseDown = true;
+                        param.pointerDown = true;
                         gl.canvas.setPointerCapture(e.pointerId);
                     }
                 });
                 gl.canvas.addEventListener('pointerup', function(e) {
                     const rect = canvas.getBoundingClientRect();
-                    param.mouseX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
-                    param.mouseY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
+                    param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
+                    param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
                     if (e.button == 0) {
-                        param.mouseDown = false;
+                        param.pointerDown = false;
                         gl.canvas.releasePointerCapture(e.pointerId);
                     }
                 });
@@ -176,7 +176,7 @@
                     },
                     uniformLocations: {
                         allPositions: gl.getUniformLocation(shaderProgram, 'allPositions'),
-                        mouse: gl.getUniformLocation(shaderProgram, 'mouse'),
+                        pointer: gl.getUniformLocation(shaderProgram, 'pointer'),
                     },
                 };
                 gl.useProgram(shaderProgram);
@@ -284,9 +284,9 @@
                     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
                 }
 
-                // update the "mouse" uniform
-                gl.uniform4fv(shaderInfo.uniformLocations.mouse, new Float32Array(
-                    [param.mouseX, param.mouseY, (param.mouseDown ? 1.0 : 0.0), 0.0]));
+                // update the "pointer" uniform
+                gl.uniform4fv(shaderInfo.uniformLocations.pointer, new Float32Array(
+                    [param.pointerX, param.pointerY, (param.pointerDown ? 1.0 : 0.0), 0.0]));
 
                 // Initialize reading of shader output through transform feedback buffers
                 var newPosArray = new Float32Array(param.particleLimit * 4);
