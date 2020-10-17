@@ -22,7 +22,8 @@
         <canvas id="canvas" width="800" height="600"></canvas>
         <script>
             var parameters = {
-                particleLimit: 256 // Keep this in sync with particleLimit in vertex shader!
+                particleLimit: 256, // Keep this in sync with particleLimit in vertex shader!
+                logFPS: false,
             }
         </script>
         <script type="x-shader/x-vertex" id="vertex-shader">
@@ -99,6 +100,8 @@
 
                 param.particleLimit = Math.min(param.particleLimit,
                     gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS))
+                param.fpsCounter = 0;
+                param.fpsTime = 0;
 
                 const shaderInfo = initShaders(gl);
                 const buffers = initBuffers(gl, shaderInfo, param);
@@ -253,7 +256,7 @@
                 // asynchronous callback that waits for the shader to finish running
                 const fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
                 gl.flush();
-                function readShaderOutput() {
+                function readShaderOutput(timestamp) {
                     const status = gl.clientWaitSync(fence, 0, 0);
                     if (status === gl.CONDITION_SATISFIED || status === gl.ALREADY_SIGNALED) {
                         gl.deleteSync(fence);
@@ -274,12 +277,20 @@
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldV);
                         gl.bufferData(gl.ARRAY_BUFFER, output, gl.DYNAMIC_DRAW);
 
+                        if (param.logFPS) {
+                            if (timestamp - 1000 > param.fpsTime) {
+                                param.fpsTime = timestamp;
+                                console.log('frames per second: ' + param.fpsCounter);
+                                param.fpsCounter = 0;
+                            }
+                            param.fpsCounter++;
+                        }
                         drawScene(gl, shaderInfo, buffers, param);
                     } else {
-                        setTimeout(readShaderOutput);
+                        window.requestAnimationFrame(readShaderOutput);
                     }
                 }
-                setTimeout(readShaderOutput);
+                window.requestAnimationFrame(readShaderOutput);
             }
         </script>
     </body>
