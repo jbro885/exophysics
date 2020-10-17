@@ -8,11 +8,6 @@ function main() {
     drawScene(gl, shaders, buffers);
 }
 
-class Particle {
-    constructor() {
-    }
-}
-
 function initBuffers(gl) {
     const positions = [
         0.7,  0.4,
