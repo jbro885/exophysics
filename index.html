@@ -21,7 +21,7 @@
     <body>
         <canvas id="canvas" width="800" height="600"></canvas>
         <script>
-            var options = {
+            var parameters = {
                 particleLimit: 256 // Keep this in sync with particleLimit in vertex shader!
             }
         </script>
@@ -87,9 +87,9 @@
         <script type="application/javascript" id="boilerplate">
             "use strict";
 
-            main(options);
+            main(parameters);
 
-            function main(options) {
+            function main(param) {
                 const canvas = document.querySelector('#canvas');
                 const gl = canvas.getContext('webgl2');
                 if (!gl) {
@@ -97,13 +97,12 @@
                     return;
                 }
 
-                // post-process the options
-                options.particleLimit = Math.min(options.particleLimit,
+                param.particleLimit = Math.min(param.particleLimit,
                     gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS))
 
                 const shaderInfo = initShaders(gl);
-                const buffers = initBuffers(gl, shaderInfo, options);
-                drawScene(gl, shaderInfo, buffers, options);
+                const buffers = initBuffers(gl, shaderInfo, param);
+                drawScene(gl, shaderInfo, buffers, param);
             }
 
             function initShaders(gl) {
@@ -155,12 +154,12 @@
                 return shaderProgram;
             }
 
-            function initBuffers(gl, shaderInfo, options) {
+            function initBuffers(gl, shaderInfo, param) {
                 const vao = gl.createVertexArray();
                 gl.bindVertexArray(vao);
 
                 // initiate with random positions
-                const oldPos = [...Array(options.particleLimit * 2)].map(_=>Math.random() * 2 - 1);
+                const oldPos = [...Array(param.particleLimit * 2)].map(_=>Math.random() * 2 - 1);
                 const oldPosBuffer = gl.createBuffer();
 
                 var size = 2;
@@ -175,7 +174,7 @@
                 gl.enableVertexAttribArray(shaderInfo.attribLocations.oldPos);
 
                 // initiate with random velocity
-                const oldV = [...Array(options.particleLimit * 2)].map(_=>(Math.random() * 2 - 1) * 0.005);
+                const oldV = [...Array(param.particleLimit * 2)].map(_=>(Math.random() * 2 - 1) * 0.005);
                 const oldVBuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, oldVBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oldV), gl.DYNAMIC_DRAW);
@@ -190,7 +189,7 @@
                 gl.enableVertexAttribArray(shaderInfo.attribLocations.oldV);
 
                 // currentIndex is simply [0, 1, 2, ...]
-                const currentIndex = [...Array(options.particleLimit)].map((val,key) => key)
+                const currentIndex = [...Array(param.particleLimit)].map((val,key) => key)
                 const currentIndexBuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, currentIndexBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Int32Array(currentIndex), gl.STATIC_DRAW);
@@ -218,14 +217,14 @@
                 };
             }
 
-            function drawScene(gl, shaderInfo, buffers, options) {
+            function drawScene(gl, shaderInfo, buffers, param) {
                 // this function will call itself in a loop forever.
                 gl.clearColor(0.0, 0.0, 0.0, 1.0);
                 gl.clear(gl.COLOR_BUFFER_BIT);
 
                 // Initialize reading of shader output through transform feedback buffers
-                var newPosArray = new Float32Array(options.particleLimit * 2);
-                var newVArray = new Float32Array(options.particleLimit * 2);
+                var newPosArray = new Float32Array(param.particleLimit * 2);
+                var newVArray = new Float32Array(param.particleLimit * 2);
 
                 const tf = gl.createTransformFeedback();
                 gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, tf);
@@ -244,7 +243,7 @@
 
                 // Draw scene
                 var offset = 0;
-                var vertexCount = options.particleLimit;
+                var vertexCount = param.particleLimit;
                 gl.drawArrays(gl.POINTS, offset, vertexCount);
 
                 // Read shader output
@@ -258,7 +257,7 @@
                     const status = gl.clientWaitSync(fence, 0, 0);
                     if (status === gl.CONDITION_SATISFIED || status === gl.ALREADY_SIGNALED) {
                         gl.deleteSync(fence);
-                        const output = new Float32Array(options.particleLimit * 2);
+                        const output = new Float32Array(param.particleLimit * 2);
 
                         // copy the previous "newPos" values to the current "oldPos"
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newPos);
@@ -275,7 +274,7 @@
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldV);
                         gl.bufferData(gl.ARRAY_BUFFER, output, gl.DYNAMIC_DRAW);
 
-                        drawScene(gl, shaderInfo, buffers, options);
+                        drawScene(gl, shaderInfo, buffers, param);
                     } else {
                         setTimeout(readShaderOutput);
                     }
