@@ -20,28 +20,29 @@
             const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 256);
 
             // data transfer variables
-            uniform vec2 allPositions[particleLimit];
+            uniform vec4 allPositions[particleLimit];
             uniform vec4 mouse;
             in vec4 oldPos;
             in vec4 oldV;
             in int currentIndex;
-            out vec2 newPos;
-            out vec2 newV;
+            out vec4 newPos;
+            out vec4 newV;
             out lowp vec4 color;
 
             void main() {
-                vec2 particle_pos;
-                vec2 center_of_mass;
-                center_of_mass = vec2(0.0, 0.0);
+                vec4 particle_pos;
+                vec4 center_of_mass;
+                center_of_mass = vec4(0.0, 0.0, 0.0, 0.0);
                 for (int i = 0; i < particleLimit; i++) {
                     particle_pos = allPositions[i];
                     center_of_mass += particle_pos;
                 }
                 center_of_mass /= float(particleLimit) * 1.1;
-                vec2 dist = allPositions[currentIndex] - center_of_mass;
+                vec4 dist = allPositions[currentIndex] - center_of_mass;
 
-                newPos.x = oldPos.x + oldV.x;
-                newPos.y = oldPos.y + oldV.y;
+                newPos = oldPos;
+                newPos = oldPos;
+                newPos.xy += oldV.xy;
                 if (newPos.x < -1.0) {
                     newPos.x = -1.0;
                 }
@@ -189,10 +190,10 @@
                 gl.bindVertexArray(vao);
 
                 // initiate with random positions
-                const oldPos = [...Array(param.particleLimit * 2)].map(_=>Math.random() * 2 - 1);
+                const oldPos = [...Array(param.particleLimit * 4)].map(_=>Math.random() * 2 - 1);
                 const oldPosBuffer = gl.createBuffer();
 
-                var size = 2;
+                var size = 4;
                 var type = gl.FLOAT;
                 var normalize = false;
                 var stride = 0;
@@ -204,12 +205,12 @@
                 gl.enableVertexAttribArray(shaderInfo.attribLocations.oldPos);
 
                 // initiate with random velocity
-                const oldV = [...Array(param.particleLimit * 2)].map(_=>(Math.random() * 2 - 1) * 0.005);
+                const oldV = [...Array(param.particleLimit * 4)].map(_=>(Math.random() * 2 - 1) * 0.005);
                 const oldVBuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, oldVBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oldV), gl.DYNAMIC_DRAW);
 
-                var size = 2;
+                var size = 4;
                 var type = gl.FLOAT;
                 var normalize = false;
                 var stride = 0;
@@ -262,8 +263,8 @@
                     [param.mouseX, param.mouseY, (param.mouseDown ? 1.0 : 0.0), 0.0]));
 
                 // Initialize reading of shader output through transform feedback buffers
-                var newPosArray = new Float32Array(param.particleLimit * 2);
-                var newVArray = new Float32Array(param.particleLimit * 2);
+                var newPosArray = new Float32Array(param.particleLimit * 4);
+                var newVArray = new Float32Array(param.particleLimit * 4);
 
                 const tf = gl.createTransformFeedback();
                 gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, tf);
@@ -296,7 +297,7 @@
                     const status = gl.clientWaitSync(fence, 0, 0);
                     if (status === gl.CONDITION_SATISFIED || status === gl.ALREADY_SIGNALED) {
                         gl.deleteSync(fence);
-                        const output = new Float32Array(param.particleLimit * 2);
+                        const output = new Float32Array(param.particleLimit * 4);
 
                         // copy the previous "newPos" values to the current "oldPos"
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newPos);
@@ -305,7 +306,7 @@
                         gl.bufferData(gl.ARRAY_BUFFER, output, gl.DYNAMIC_DRAW);
 
                         // update the "allPositions" uniform
-                        gl.uniform2fv(shaderInfo.uniformLocations.allPositions, output);
+                        gl.uniform4fv(shaderInfo.uniformLocations.allPositions, output);
 
                         // copy the previous "newV" values to the current "oldV"
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newV);
