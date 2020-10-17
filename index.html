@@ -16,9 +16,11 @@
         <script type="x-shader/x-vertex" id="vertex-shader">
             #version 300 es
             // parameters
-            const int extraUniforms = 1;
-            const float gravity = 0.0001;
+            const float floorGravity = 0.00005;
+            const float particleGravity = 0.04;
             const float bounceDampeningFactor = 0.80;
+            const float maxV = 0.1;
+            const int extraUniforms = 1;
             const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 256);
 
             // data transfer variables
@@ -32,23 +34,27 @@
             out lowp vec4 color;
 
             void main() {
-                vec4 particle_pos;
-                vec4 center_of_mass;
-                center_of_mass = vec4(0.0, 0.0, 0.0, 0.0);
-                for (int i = 0; i < particleLimit; i++) {
-                    particle_pos = allPositions[i];
-                    center_of_mass += particle_pos;
-                }
-                center_of_mass /= float(particleLimit);
-                vec4 dist = allPositions[currentIndex] - center_of_mass;
 
                 newPos = oldPos;
                 newV = oldV;
 
                 newPos.xy += oldV.xy;
-                newV.x -= dist.x / 1000.0;
-                newV.y -= dist.y / 1000.0;
 
+                if (particleGravity != 0.0) {
+                    vec4 particle_pos;
+                    vec4 center_of_mass;
+                    center_of_mass = vec4(0.0, 0.0, 0.0, 0.0);
+                    for (int i = 0; i < particleLimit; i++) {
+                        particle_pos = allPositions[i];
+                        center_of_mass += particle_pos;
+                    }
+                    center_of_mass /= float(particleLimit);
+                    vec4 dist = allPositions[currentIndex] - center_of_mass;
+                    newV.x -= dist.x * particleGravity;
+                    newV.y -= dist.y * particleGravity;
+                }
+
+                /* Limit Position */
                 if (newPos.x < -1.0) {
                     newPos.x = -1.0;
                     newV.x *= -bounceDampeningFactor;
@@ -65,6 +71,12 @@
                     newPos.y = 1.0;
                     newV.y *= -bounceDampeningFactor;
                 }
+
+                /* Limit Velocity */
+                if (length(newV.xy) > maxV) {
+                    newV.xy *= vec2(maxV / length(newV.xy));
+                }
+
                 color.b = min(1.0, max(0.0, abs(newV.x) * 100.0));
                 color.r = min(1.0, max(0.0, abs(newV.y) * 100.0));
                 color.g = 1.0 - (color.r + color.b) / 2.0;
@@ -76,8 +88,8 @@
                         newV.y *= 1.0 - (0.3 - dist);
                     }
                 }
-                if (gravity > 0.0) {
-                    newV.y -= gravity;
+                if (floorGravity != 0.0) {
+                    newV.y -= floorGravity;
                 }
 
                 gl_Position.xy = newPos.xy;
