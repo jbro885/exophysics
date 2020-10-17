@@ -29,15 +29,17 @@
         <script type="x-shader/x-vertex" id="vertex-shader">
             #version 300 es
             in vec4 aVertexPosition;
+            in vec4 aVertexVelocity;
             in vec4 aVertexColor;
+            uniform vec2 allPositions[4];
             out vec2 newPos;
             out lowp vec4 vColor;
 
             void main() {
                 gl_Position = aVertexPosition;
                 vColor = aVertexColor;
-                newPos.x = aVertexPosition.x + 0.001;
-                newPos.y = aVertexPosition.y + 0.001;
+                newPos.x = aVertexPosition.x + aVertexVelocity.x;
+                newPos.y = aVertexPosition.y + aVertexVelocity.y;
             }
         </script>
         <script type="x-shader/x-fragment" id="fragment-shader">

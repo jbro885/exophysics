@@ -24,6 +24,16 @@ function initBuffers(gl) {
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
 
+    const velocities = [
+        0.001,  0.0005,
+        0.001,  0.0008,
+        0.0003, -0.0003,
+        0.0005, 0.0012,
+    ];
+    const velocityBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, velocityBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(velocities), gl.DYNAMIC_DRAW);
+
     var colors = [
         0.0,  1.0,  1.0,  1.0,
         1.0,  0.0,  0.0,  1.0,
@@ -36,6 +46,7 @@ function initBuffers(gl) {
 
     return {
         position: positionBuffer,
+        velocities: velocityBuffer,
         color: colorBuffer,
     };
 }
@@ -59,6 +70,19 @@ function drawScene(gl, programInfo, buffers) {
     gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition,
         size, type, normalize, stride, offset);
     gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+    gl.vertexAttribPointer(programInfo.uniformLocations.allPositions,
+        size, type, normalize, stride, offset);
+    gl.enableVertexAttribArray(programInfo.uniformLocations.allPositions);
+
+    var size = 2;
+    var type = gl.FLOAT;
+    var normalize = false;
+    var stride = 0;
+    var offset = 0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.velocities);
+    gl.vertexAttribPointer(programInfo.attribLocations.vertexVelocity,
+        size, type, normalize, stride, offset);
+    gl.enableVertexAttribArray(programInfo.attribLocations.vertexVelocity);
 
     var size = 4;
     var type = gl.FLOAT;
@@ -76,7 +100,7 @@ function drawScene(gl, programInfo, buffers) {
 }
 
 function nextFrame(gl, programInfo, buffers) {
-    var transformBuffer = gl.createBuffer();
+    var transformBuffer = gl.createBuffer(); // TODO: Don't create new buffer each time
     var emptyDataArray = new Float32Array(999);
 
     const tf = gl.createTransformFeedback();
@@ -117,6 +141,9 @@ function nextFrame(gl, programInfo, buffers) {
             gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition,
                 size, type, normalize, stride, offset);
             gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+            gl.vertexAttribPointer(programInfo.uniformLocations.allPositions,
+                size, type, normalize, stride, offset);
+            gl.enableVertexAttribArray(programInfo.uniformLocations.allPositions);
             nextFrame(gl, programInfo, buffers);
         } else {
             setTimeout(waitForResult);
