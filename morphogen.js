@@ -72,7 +72,40 @@ function drawScene(gl, programInfo, buffers) {
 
     gl.useProgram(programInfo.program);
 
+    var transformBuffer = gl.createBuffer();
+    var emptyDataArray = new Float32Array(999);
+
+    const tf = gl.createTransformFeedback();
+    gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, tf);
+
+    gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, transformBuffer);
+    gl.bufferData(gl.TRANSFORM_FEEDBACK_BUFFER, emptyDataArray, gl.STATIC_READ);
+    gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, null);
+    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, transformBuffer);
+    gl.beginTransformFeedback(gl.TRIANGLES);
+
     var offset = 0;
     var vertexCount = 4;
-    gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount);
+    gl.drawArrays(gl.TRIANGLES, offset, vertexCount);
+
+    var count = 0;
+    gl.endTransformFeedback();
+    gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, null);
+
+    const fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+    gl.flush();
+    console.log('waiting...');
+    setTimeout(waitForResult);
+    function waitForResult() {
+        const status = gl.clientWaitSync(fence, 0, 0);
+        if (status === gl.CONDITION_SATISFIED || status === gl.ALREADY_SIGNALED) {
+            gl.deleteSync(fence);
+            const output = new Float32Array(vertexCount);
+            gl.bindBuffer(gl.ARRAY_BUFFER, transformBuffer);
+            gl.getBufferSubData(gl.ARRAY_BUFFER, 0, output);
+            console.log(output);
+        } else {
+            setTimeout(waitForResult);
+        }
+    }
 }
