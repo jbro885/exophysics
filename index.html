@@ -33,6 +33,7 @@
             in vec4 aVertexColor;
             uniform vec2 allPositions[4];
             out vec2 newPos;
+            out vec2 newV;
             out lowp vec4 vColor;
 
             void main() {
@@ -40,6 +41,8 @@
                 vColor = aVertexColor;
                 newPos.x = aVertexPosition.x + aVertexVelocity.x;
                 newPos.y = aVertexPosition.y + aVertexVelocity.y;
+                newV.x = aVertexVelocity.x * 0.99;
+                newV.y = aVertexVelocity.y * 0.99;
             }
         </script>
         <script type="x-shader/x-fragment" id="fragment-shader">

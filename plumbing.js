@@ -49,7 +49,7 @@ function createProgram(gl, vertexShaderSource, fragmentShaderSource) {
     const shaderProgram = gl.createProgram();
     gl.attachShader(shaderProgram, vertexShader);
     gl.attachShader(shaderProgram, fragmentShader);
-    gl.transformFeedbackVaryings(shaderProgram, ['newPos'], gl.INTERLEAVED_ATTRIBS);
+    gl.transformFeedbackVaryings(shaderProgram, ['newPos', 'newV'], gl.SEPARATE_ATTRIBS);
     gl.linkProgram(shaderProgram);
 
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {

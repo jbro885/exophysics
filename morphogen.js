@@ -44,10 +44,15 @@ function initBuffers(gl) {
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
 
+    var newPosBuffer = gl.createBuffer();
+    var newVBuffer = gl.createBuffer();
+
     return {
         position: positionBuffer,
         velocities: velocityBuffer,
         color: colorBuffer,
+        newPos: newPosBuffer,
+        newV: newVBuffer,
     };
 }
 
@@ -100,16 +105,22 @@ function drawScene(gl, programInfo, buffers) {
 }
 
 function nextFrame(gl, programInfo, buffers) {
-    var transformBuffer = gl.createBuffer(); // TODO: Don't create new buffer each time
     var emptyDataArray = new Float32Array(999);
+    var emptyDataArray2 = new Float32Array(999);
 
     const tf = gl.createTransformFeedback();
     gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, tf);
 
-    gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, transformBuffer);
+    gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, buffers.newPos);
     gl.bufferData(gl.TRANSFORM_FEEDBACK_BUFFER, emptyDataArray, gl.STATIC_READ);
     gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, null);
-    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, transformBuffer);
+    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, buffers.newPos);
+
+    gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, buffers.newV);
+    gl.bufferData(gl.TRANSFORM_FEEDBACK_BUFFER, emptyDataArray2, gl.STATIC_READ);
+    gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, null);
+    gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, buffers.newV);
+
     gl.beginTransformFeedback(gl.POINTS);
 
     var offset = 0;
@@ -128,22 +139,37 @@ function nextFrame(gl, programInfo, buffers) {
         if (status === gl.CONDITION_SATISFIED || status === gl.ALREADY_SIGNALED) {
             gl.deleteSync(fence);
             const output = new Float32Array(vertexCount * 2);
-            gl.bindBuffer(gl.ARRAY_BUFFER, transformBuffer);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newPos);
             gl.getBufferSubData(gl.ARRAY_BUFFER, 0, output);
             gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(output), gl.DYNAMIC_DRAW);
+
             var size = 2;
             var type = gl.FLOAT;
             var normalize = false;
             var stride = 0;
             var offset = 0;
             gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+
             gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition,
                 size, type, normalize, stride, offset);
             gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+
             gl.vertexAttribPointer(programInfo.uniformLocations.allPositions,
                 size, type, normalize, stride, offset);
             gl.enableVertexAttribArray(programInfo.uniformLocations.allPositions);
+
+            //----
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newV);
+            gl.getBufferSubData(gl.ARRAY_BUFFER, 0, output);
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.velocities);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(output), gl.DYNAMIC_DRAW);
+
+            gl.vertexAttribPointer(programInfo.attribLocations.vertexVelocity,
+                size, type, normalize, stride, offset);
+            gl.enableVertexAttribArray(programInfo.attribLocations.vertexVelocity);
+
             nextFrame(gl, programInfo, buffers);
         } else {
             setTimeout(waitForResult);
