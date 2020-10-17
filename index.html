@@ -17,6 +17,7 @@
             #version 300 es
             // parameters
             const int extraUniforms = 1;
+            const float gravity = 0.0001;
             const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 256);
 
             // data transfer variables
@@ -67,6 +68,9 @@
                         newV.x *= 1.0 - (0.3 - dist);
                         newV.y *= 1.0 - (0.3 - dist);
                     }
+                }
+                if (gravity > 0.0) {
+                    newV.y -= gravity;
                 }
 
                 gl_Position.xy = newPos.xy;
