@@ -10,16 +10,16 @@
             var parameters = {
                 particleLimit: 256, // Keep this in sync with particleLimit in vertex shader!
                 extraUniforms: 1, // Update this when you add more uniforms to shader
-                logFPS: false,
+                logFPS: true,
             }
         </script>
         <script type="x-shader/x-vertex" id="vertex-shader">
             #version 300 es
             // parameters
-            const float floorGravity = 0.00005;
-            const float particleGravity = 0.04;
-            const float bounceDampeningFactor = 0.80;
-            const float maxV = 0.1;
+            const float floorGravity = 0.001;
+            const float particleGravity = 0.9;
+            const float bounceDampeningFactor = 1.1;
+            const float maxV = 0.2;
             const int extraUniforms = 1;
             const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 256);
 
@@ -84,8 +84,8 @@
                 if (mouse.z > 0.0) {
                     float dist = distance(newPos.xy, mouse.xy);
                     if (dist < 0.3) {
-                        newV.x *= 1.0 - (0.3 - dist);
-                        newV.y *= 1.0 - (0.3 - dist);
+                        newV.x *= 1.0 - (0.5 - dist);
+                        newV.y *= 1.0 - (0.5 - dist);
                     }
                 }
                 if (floorGravity != 0.0) {
