@@ -30,13 +30,14 @@
             #version 300 es
             in vec4 aVertexPosition;
             in vec4 aVertexColor;
-            out float answer;
+            out vec2 newPos;
             out lowp vec4 vColor;
 
             void main() {
                 gl_Position = aVertexPosition;
                 vColor = aVertexColor;
-                answer = aVertexPosition.x * float(42);
+                newPos.x = aVertexPosition.x + 0.001;
+                newPos.y = aVertexPosition.y + 0.001;
             }
         </script>
         <script type="x-shader/x-fragment" id="fragment-shader">
