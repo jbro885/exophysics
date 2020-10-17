@@ -27,7 +27,10 @@
         </script>
         <script type="x-shader/x-vertex" id="vertex-shader">
             #version 300 es
+            // parameters
             const int particleLimit = min(gl_MaxVertexUniformVectors, 256);
+
+            // data transfer variables
             uniform vec2 allPositions[particleLimit];
             in vec4 oldPos;
             in vec4 oldV;
@@ -78,6 +81,7 @@
             precision highp float;
             in vec4 color;
             out vec4 outColor;
+            // The color is computed by vertex shader to avoid copying uniforms twice.
             void main() { outColor = color; }
         </script>
         <script type="application/javascript" id="boilerplate">
@@ -200,6 +204,7 @@
                     size, type, normalize, stride, offset);
                 gl.enableVertexAttribArray(shaderInfo.attribLocations.currentIndex);
 
+                // buffers for reading data from the shader through transform feedback buffers
                 var newPosBuffer = gl.createBuffer();
                 var newVBuffer = gl.createBuffer();
 
@@ -218,7 +223,7 @@
                 gl.clearColor(0.0, 0.0, 0.0, 1.0);
                 gl.clear(gl.COLOR_BUFFER_BIT);
 
-                // Connect arrays to transform feedback buffers (to read shader output)
+                // Initialize reading of shader output through transform feedback buffers
                 var newPosArray = new Float32Array(options.particleLimit * 2);
                 var newVArray = new Float32Array(options.particleLimit * 2);
 
