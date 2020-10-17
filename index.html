@@ -17,9 +17,11 @@
             #version 300 es
             // parameters
             const float floorGravity = 0.001;
-            const float particleGravity = 0.9;
-            const float bounceDampeningFactor = 1.1;
-            const float maxV = 0.2;
+            const float particleGravity = 0.001;
+            const float bounceDampeningFactor = 0.95;
+            const float maxV = 0.1;
+            const float pointerRadius = 0.3;
+            const float pointerSlowFactor = 0.3;
             const int extraUniforms = 1;
             const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 256);
 
@@ -34,10 +36,8 @@
             out lowp vec4 color;
 
             void main() {
-
                 newPos = oldPos;
                 newV = oldV;
-
                 newPos.xy += oldV.xy;
 
                 if (particleGravity != 0.0) {
@@ -81,13 +81,16 @@
                 color.r = min(1.0, max(0.0, abs(newV.y) * 100.0));
                 color.g = 1.0 - (color.r + color.b) / 2.0;
                 color.a = 1.0;
+
                 if (mouse.z > 0.0) {
                     float dist = distance(newPos.xy, mouse.xy);
-                    if (dist < 0.3) {
-                        newV.x *= 1.0 - (0.5 - dist);
-                        newV.y *= 1.0 - (0.5 - dist);
+                    if (dist <= pointerRadius) {
+                        dist /= pointerRadius;
+                        newV.x *= 1.0 - pointerSlowFactor * (1.0 - dist);
+                        newV.y *= 1.0 - pointerSlowFactor * (1.0 - dist);
                     }
                 }
+
                 if (floorGravity != 0.0) {
                     newV.y -= floorGravity;
                 }
