@@ -4,12 +4,21 @@ main();
 
 function main() {
     const [gl, shaders] = initializeWebGL();
-    const buffers = initBuffers(gl);
-    drawScene(gl, shaders, buffers);
+    var options = {
+        particleLimit: 10,
+    };
+    const buffers = initBuffers(gl, options);
+    drawScene(gl, shaders, buffers, options);
 }
 
-function initBuffers(gl) {
+function initBuffers(gl, options) {
     const positions = [
+        0.7,  0.4,
+        -0.2,  0.6,
+        0.3, -0.3,
+        -0.5, -0.9,
+        -0.2,  0.6,
+        0.3, -0.3,
         0.7,  0.4,
         -0.2,  0.6,
         0.3, -0.3,
@@ -23,13 +32,23 @@ function initBuffers(gl) {
         -0.001,  0.001,
         0.005,  0.001,
         0.002, -0.001,
+        -0.001,  0.001,
+        0.002, -0.001,
+        0.005,  0.001,
+        0.002, -0.001,
+        0.001, 0.001,
+        0.001, 0.001,
         0.001, 0.001,
     ];
     const velocityBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, velocityBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(velocities), gl.DYNAMIC_DRAW);
 
-    var indices = [0, 1, 2, 3];
+    var indices = [];
+    var i;
+    for (i = 0; i < options.particleLimit; i++) {
+        indices[i] = i;
+    }
     const myIndexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, myIndexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Int32Array(indices), gl.STATIC_DRAW);
@@ -46,7 +65,7 @@ function initBuffers(gl) {
     };
 }
 
-function drawScene(gl, programInfo, buffers) {
+function drawScene(gl, programInfo, buffers, options) {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
     gl.enable(gl.DEPTH_TEST);           // Enable depth testing
@@ -90,10 +109,10 @@ function drawScene(gl, programInfo, buffers) {
 
     gl.useProgram(programInfo.program);
 
-    nextFrame(gl, programInfo, buffers);
+    nextFrame(gl, programInfo, buffers, options);
 }
 
-function nextFrame(gl, programInfo, buffers) {
+function nextFrame(gl, programInfo, buffers, options) {
     var emptyDataArray = new Float32Array(999);
     var emptyDataArray2 = new Float32Array(999);
 
@@ -113,7 +132,7 @@ function nextFrame(gl, programInfo, buffers) {
     gl.beginTransformFeedback(gl.POINTS);
 
     var offset = 0;
-    var vertexCount = 4;
+    var vertexCount = options.particleLimit;
     gl.drawArrays(gl.POINTS, offset, vertexCount);
 
     var count = 0;
@@ -157,7 +176,7 @@ function nextFrame(gl, programInfo, buffers) {
                 size, type, normalize, stride, offset);
             gl.enableVertexAttribArray(programInfo.attribLocations.vertexVelocity);
 
-            nextFrame(gl, programInfo, buffers);
+            nextFrame(gl, programInfo, buffers, options);
         } else {
             setTimeout(waitForResult);
         }
