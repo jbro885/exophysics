@@ -33,6 +33,7 @@
 
             void main() {
                 gl_Position = aVertexPosition;
+                gl_PointSize = 4.0 - 2.0 * min(1.0, max(0.0, (aVertexVelocity.x + aVertexVelocity.y) * 50.0));
 
                 vec2 particle_pos;
                 vec2 center_of_mass;
