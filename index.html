@@ -148,34 +148,36 @@
             }
 
             function initBuffers(gl, options) {
-                const positions = [...Array(options.particleLimit * 2)].map(_=>Math.random() * 2 - 1);
-                const positionBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
+                // initiate with random positions
+                const oldPos = [...Array(options.particleLimit * 2)].map(_=>Math.random() * 2 - 1);
+                const oldPosBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, oldPosBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oldPos), gl.DYNAMIC_DRAW);
 
-                const velocities = [...Array(options.particleLimit * 2)].map(_=>(Math.random() * 2 - 1) * 0.005);
-                const velocityBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, velocityBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(velocities), gl.DYNAMIC_DRAW);
+                // initiate with random velocity
+                const oldV = [...Array(options.particleLimit * 2)].map(_=>(Math.random() * 2 - 1) * 0.005);
+                const oldVBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, oldVBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oldV), gl.DYNAMIC_DRAW);
 
-                var indices = [];
+                var currentIndex = [];
                 var i;
                 for (i = 0; i < options.particleLimit; i++) {
-                    indices[i] = i;
+                    currentIndex[i] = i;
                 }
-                const myIndexBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, myIndexBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Int32Array(indices), gl.STATIC_DRAW);
+                const currentIndexBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, currentIndexBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Int32Array(currentIndex), gl.STATIC_DRAW);
 
                 var newPosBuffer = gl.createBuffer();
                 var newVBuffer = gl.createBuffer();
 
                 return {
-                    position: positionBuffer,
-                    velocities: velocityBuffer,
+                    oldPos: oldPosBuffer,
+                    oldV: oldVBuffer,
                     newPos: newPosBuffer,
                     newV: newVBuffer,
-                    indices: myIndexBuffer,
+                    currentIndex: currentIndexBuffer,
                 };
             }
 
@@ -192,7 +194,7 @@
                 var normalize = false;
                 var stride = 0;
                 var offset = 0;
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldPos);
                 gl.vertexAttribPointer(programInfo.attribLocations.oldPos,
                     size, type, normalize, stride, offset);
                 gl.enableVertexAttribArray(programInfo.attribLocations.oldPos);
@@ -204,7 +206,7 @@
                 var normalize = false;
                 var stride = 0;
                 var offset = 0;
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.velocities);
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldV);
                 gl.vertexAttribPointer(programInfo.attribLocations.oldV,
                     size, type, normalize, stride, offset);
                 gl.enableVertexAttribArray(programInfo.attribLocations.oldV);
@@ -214,7 +216,7 @@
                 var normalize = false;
                 var stride = 0;
                 var offset = 0;
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.indices);
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.currentIndex);
                 gl.vertexAttribIPointer(programInfo.attribLocations.currentIndex,
                     size, type, normalize, stride, offset);
                 gl.enableVertexAttribArray(programInfo.attribLocations.currentIndex);
@@ -260,9 +262,10 @@
                         gl.deleteSync(fence);
                         const output = new Float32Array(vertexCount * 2);
 
+                        // copy the previous "newPos" values to the current "oldPos"
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newPos);
                         gl.getBufferSubData(gl.ARRAY_BUFFER, 0, output);
-                        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+                        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldPos);
                         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(output), gl.DYNAMIC_DRAW);
 
                         var size = 2;
@@ -270,7 +273,7 @@
                         var normalize = false;
                         var stride = 0;
                         var offset = 0;
-                        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+                        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldPos);
 
                         gl.vertexAttribPointer(programInfo.attribLocations.oldPos,
                             size, type, normalize, stride, offset);
@@ -278,10 +281,10 @@
 
                         gl.uniform2fv(programInfo.uniformLocations.allPositions, output);
 
-                        //----
+                        // copy the previous "newV" values to the current "oldV"
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newV);
                         gl.getBufferSubData(gl.ARRAY_BUFFER, 0, output);
-                        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.velocities);
+                        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldV);
                         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(output), gl.DYNAMIC_DRAW);
 
                         gl.vertexAttribPointer(programInfo.attribLocations.oldV,
