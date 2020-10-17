@@ -41,10 +41,21 @@
                 gl_Position = aVertexPosition;
                 vColor = aVertexColor;
                 float dampening = 1.0 - 0.003 * float(myIndex + 1);
+
+                vec2 particle_pos;
+                vec2 center_of_mass;
+                center_of_mass = vec2(0.0, 0.0);
+                for (int i = 0; i < 4; i++) {
+                    particle_pos = allPositions[i];
+                    center_of_mass += particle_pos;
+                }
+                center_of_mass /= 5.0;  // Not by 4.0 to create a bias towards the center
+                vec2 dist = allPositions[myIndex] - center_of_mass;
+
                 newPos.x = aVertexPosition.x + aVertexVelocity.x;
                 newPos.y = aVertexPosition.y + aVertexVelocity.y;
-                newV.x = aVertexVelocity.x * dampening;
-                newV.y = aVertexVelocity.y * dampening;
+                newV.x = aVertexVelocity.x - dist.x / 10000.0;
+                newV.y = aVertexVelocity.y - dist.y / 10000.0;
             }
         </script>
         <script type="x-shader/x-fragment" id="fragment-shader">

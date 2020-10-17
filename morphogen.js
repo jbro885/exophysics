@@ -25,10 +25,10 @@ function initBuffers(gl) {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
 
     const velocities = [
-        -0.001,  0.0005,
-        0.001,  0.0008,
-        0.0003, -0.0003,
-        0.0005, 0.0012,
+        -0.001,  0.001,
+        0.005,  0.001,
+        0.002, -0.001,
+        0.001, 0.001,
     ];
     const velocityBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, velocityBuffer);
@@ -81,9 +81,8 @@ function drawScene(gl, programInfo, buffers) {
     gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition,
         size, type, normalize, stride, offset);
     gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-    gl.vertexAttribPointer(programInfo.uniformLocations.allPositions,
-        size, type, normalize, stride, offset);
-    gl.enableVertexAttribArray(programInfo.uniformLocations.allPositions);
+
+    // TODO: pass all positions on first frame too.
 
     var size = 2;
     var type = gl.FLOAT;
@@ -172,9 +171,7 @@ function nextFrame(gl, programInfo, buffers) {
                 size, type, normalize, stride, offset);
             gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
 
-            gl.vertexAttribPointer(programInfo.uniformLocations.allPositions,
-                size, type, normalize, stride, offset);
-            gl.enableVertexAttribArray(programInfo.uniformLocations.allPositions);
+            gl.uniform2fv(programInfo.uniformLocations.allPositions, output);
 
             //----
             gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newV);
