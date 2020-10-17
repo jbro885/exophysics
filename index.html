@@ -266,15 +266,16 @@
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newPos);
                         gl.getBufferSubData(gl.ARRAY_BUFFER, 0, output);
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldPos);
-                        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(output), gl.DYNAMIC_DRAW);
+                        gl.bufferData(gl.ARRAY_BUFFER, output, gl.DYNAMIC_DRAW);
 
+                        // update the "allPositions" uniform
                         gl.uniform2fv(programInfo.uniformLocations.allPositions, output);
 
                         // copy the previous "newV" values to the current "oldV"
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newV);
                         gl.getBufferSubData(gl.ARRAY_BUFFER, 0, output);
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldV);
-                        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(output), gl.DYNAMIC_DRAW);
+                        gl.bufferData(gl.ARRAY_BUFFER, output, gl.DYNAMIC_DRAW);
 
                         nextFrame(gl, programInfo, buffers, options);
                     } else {
