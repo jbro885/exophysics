@@ -18,6 +18,7 @@
             // parameters
             const int extraUniforms = 1;
             const float gravity = 0.0001;
+            const float bounceDampeningFactor = 0.80;
             const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 256);
 
             // data transfer variables
@@ -42,22 +43,28 @@
                 vec4 dist = allPositions[currentIndex] - center_of_mass;
 
                 newPos = oldPos;
-                newPos = oldPos;
+                newV = oldV;
+
                 newPos.xy += oldV.xy;
+                newV.x -= dist.x / 1000.0;
+                newV.y -= dist.y / 1000.0;
+
                 if (newPos.x < -1.0) {
                     newPos.x = -1.0;
+                    newV.x *= -bounceDampeningFactor;
                 }
-                if (newPos.x > 1.0) {
+                else if (newPos.x > 1.0) {
                     newPos.x = 1.0;
+                    newV.x *= -bounceDampeningFactor;
                 }
                 if (newPos.y < -1.0) {
                     newPos.y = -1.0;
+                    newV.y *= -bounceDampeningFactor;
                 }
-                if (newPos.y > 1.0) {
+                else if (newPos.y > 1.0) {
                     newPos.y = 1.0;
+                    newV.y *= -bounceDampeningFactor;
                 }
-                newV.x = oldV.x - dist.x / 1000.0;
-                newV.y = oldV.y - dist.y / 1000.0;
                 color.b = min(1.0, max(0.0, abs(newV.x) * 100.0));
                 color.r = min(1.0, max(0.0, abs(newV.y) * 100.0));
                 color.g = 1.0 - (color.r + color.b) / 2.0;
