@@ -34,6 +34,7 @@
 
             // data transfer variables
             uniform vec2 allPositions[particleLimit];
+            uniform vec4 mouse;
             in vec4 oldPos;
             in vec4 oldV;
             in int currentIndex;
@@ -72,6 +73,9 @@
                 color.r = min(1.0, max(0.0, abs(newV.y) * 100.0));
                 color.g = 1.0 - (color.r + color.b) / 2.0;
                 color.a = 1.0;
+                if (mouse.z > 0.0) {
+                    color.xyz = mouse.zyx;
+                }
 
                 gl_Position.xy = newPos.xy;
                 gl_Position.zw = vec2(0.0, 1.0);
@@ -152,6 +156,7 @@
                     },
                     uniformLocations: {
                         allPositions: gl.getUniformLocation(shaderProgram, 'allPositions'),
+                        mouse: gl.getUniformLocation(shaderProgram, 'mouse'),
                     },
                 };
                 gl.useProgram(shaderProgram);
@@ -253,6 +258,10 @@
                 // this function will call itself in a loop forever.
                 gl.clearColor(0.0, 0.0, 0.0, 1.0);
                 gl.clear(gl.COLOR_BUFFER_BIT);
+
+                // update the "mouse" uniform
+                gl.uniform4fv(shaderInfo.uniformLocations.mouse, new Float32Array(
+                    [param.mouseX, param.mouseY, (param.mouseDown ? 1.0 : 0.0), 0.0]));
 
                 // Initialize reading of shader output through transform feedback buffers
                 var newPosArray = new Float32Array(param.particleLimit * 2);
