@@ -5,41 +5,19 @@ main();
 function main() {
     const [gl, shaders] = initializeWebGL();
     var options = {
-        particleLimit: 10,
+        particleLimit: 50,
     };
     const buffers = initBuffers(gl, options);
     drawScene(gl, shaders, buffers, options);
 }
 
 function initBuffers(gl, options) {
-    const positions = [
-        0.7,  0.4,
-        -0.2,  0.6,
-        0.3, -0.3,
-        -0.5, -0.9,
-        -0.2,  0.6,
-        0.3, -0.3,
-        0.7,  0.4,
-        -0.2,  0.6,
-        0.3, -0.3,
-        -0.5, -0.9,
-    ];
+    const positions = [...Array(options.particleLimit * 2)].map(_=>Math.random() * 2 - 1);
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW);
 
-    const velocities = [
-        -0.001,  0.001,
-        0.005,  0.001,
-        0.002, -0.001,
-        -0.001,  0.001,
-        0.002, -0.001,
-        0.005,  0.001,
-        0.002, -0.001,
-        0.001, 0.001,
-        0.001, 0.001,
-        0.001, 0.001,
-    ];
+    const velocities = [...Array(options.particleLimit * 2)].map(_=>(Math.random() * 2 - 1) * 0.005);
     const velocityBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, velocityBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(velocities), gl.DYNAMIC_DRAW);
@@ -113,8 +91,8 @@ function drawScene(gl, programInfo, buffers, options) {
 }
 
 function nextFrame(gl, programInfo, buffers, options) {
-    var emptyDataArray = new Float32Array(999);
-    var emptyDataArray2 = new Float32Array(999);
+    var emptyDataArray = new Float32Array(options.particleLimit * 2);
+    var emptyDataArray2 = new Float32Array(options.particleLimit * 2);
 
     const tf = gl.createTransformFeedback();
     gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, tf);

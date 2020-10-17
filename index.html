@@ -28,7 +28,7 @@
         <canvas id="canvas"></canvas>
         <script type="x-shader/x-vertex" id="vertex-shader">
             #version 300 es
-            const int particleLimit = 10;
+            const int particleLimit = 50;
             uniform vec2 allPositions[particleLimit];
             in vec4 aVertexPosition;
             in vec4 aVertexVelocity;
@@ -47,7 +47,7 @@
                     particle_pos = allPositions[i];
                     center_of_mass += particle_pos;
                 }
-                center_of_mass /= float(particleLimit + 2);
+                center_of_mass /= float(particleLimit) * 1.1;
                 vec2 dist = allPositions[myIndex] - center_of_mass;
 
                 newPos.x = aVertexPosition.x + aVertexVelocity.x;
