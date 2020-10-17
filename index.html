@@ -99,9 +99,10 @@
             }
 
             function initializeShaders(gl) {
-                const vertexShaderSource = document.getElementById("vertex-shader").text
-                const fragmentShaderSource = document.getElementById("fragment-shader").text
-                const shaderProgram = createProgram(gl, vertexShaderSource, fragmentShaderSource);
+                const vertexSource = document.getElementById("vertex-shader").text
+                const fragmentSource = document.getElementById("fragment-shader").text
+                const feedbackVars = ['newPos', 'newV'];
+                const shaderProgram = createProgram(gl, vertexSource, fragmentSource, feedbackVars);
 
                 const shaderInfo = {
                     program: shaderProgram,
@@ -129,13 +130,13 @@
                 return shader;
             }
 
-            function createProgram(gl, vertexShaderSource, fragmentShaderSource) {
-                const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource.trim());
-                const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource.trim());
+            function createProgram(gl, vertexSource, fragmentSource, feedbackVars) {
+                const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexSource.trim());
+                const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentSource.trim());
                 const shaderProgram = gl.createProgram();
                 gl.attachShader(shaderProgram, vertexShader);
                 gl.attachShader(shaderProgram, fragmentShader);
-                gl.transformFeedbackVaryings(shaderProgram, ['newPos', 'newV'], gl.SEPARATE_ATTRIBS);
+                gl.transformFeedbackVaryings(shaderProgram, feedbackVars, gl.SEPARATE_ATTRIBS);
                 gl.linkProgram(shaderProgram);
 
                 if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
