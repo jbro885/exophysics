@@ -22,7 +22,7 @@
         <canvas id="canvas" width="800" height="600"></canvas>
         <script type="x-shader/x-vertex" id="vertex-shader">
             #version 300 es
-            const int particleLimit = 256;
+            const int particleLimit = min(gl_MaxVertexUniformVectors, 256);
             uniform vec2 allPositions[particleLimit];
             in vec4 aVertexPosition;
             in vec4 aVertexVelocity;
@@ -87,7 +87,7 @@
                     return;
                 }
                 var options = {
-                    particleLimit: 256,
+                    particleLimit: Math.min(256, gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS)),
                 };
                 const shaderInfo = initializeShaders(gl);
                 const buffers = initBuffers(gl, options);
