@@ -29,17 +29,14 @@
             #version 300 es
             const int particleLimit = min(gl_MaxVertexUniformVectors, 256);
             uniform vec2 allPositions[particleLimit];
-            in vec4 aVertexPosition;
-            in vec4 aVertexVelocity;
-            in int myIndex;
+            in vec4 oldPos;
+            in vec4 oldV;
+            in int currentIndex;
             out vec2 newPos;
             out vec2 newV;
             out lowp vec4 color;
 
             void main() {
-                gl_Position = aVertexPosition;
-                gl_PointSize = 4.0 - 2.0 * min(1.0, max(0.0, (aVertexVelocity.x + aVertexVelocity.y) * 50.0));
-
                 vec2 particle_pos;
                 vec2 center_of_mass;
                 center_of_mass = vec2(0.0, 0.0);
@@ -48,10 +45,10 @@
                     center_of_mass += particle_pos;
                 }
                 center_of_mass /= float(particleLimit) * 1.1;
-                vec2 dist = allPositions[myIndex] - center_of_mass;
+                vec2 dist = allPositions[currentIndex] - center_of_mass;
 
-                newPos.x = aVertexPosition.x + aVertexVelocity.x;
-                newPos.y = aVertexPosition.y + aVertexVelocity.y;
+                newPos.x = oldPos.x + oldV.x;
+                newPos.y = oldPos.y + oldV.y;
                 if (newPos.x < -1.0) {
                     newPos.x = -1.0;
                 }
@@ -64,12 +61,16 @@
                 if (newPos.y > 1.0) {
                     newPos.y = 1.0;
                 }
-                newV.x = aVertexVelocity.x - dist.x / 10000.0;
-                newV.y = aVertexVelocity.y - dist.y / 10000.0;
+                newV.x = oldV.x - dist.x / 10000.0;
+                newV.y = oldV.y - dist.y / 10000.0;
                 color.b = min(1.0, max(0.0, abs(newV.x) * 255.0));
                 color.g = min(1.0, max(0.0, abs(newV.y) * 255.0));
                 color.r = 1.0 - (color.r + color.b) / 2.0;
                 color.a = 1.0;
+
+                gl_Position.xy = newPos.xy;
+                gl_Position.zw = vec2(0.0, 1.0);
+                gl_PointSize = 4.0 - 2.0 * min(1.0, max(0.0, (newV.x + newV.y) * 50.0));
             }
         </script>
         <script type="x-shader/x-fragment" id="fragment-shader">
@@ -93,12 +94,12 @@
                 }
                 options.particleLimit = Math.min(options.particleLimit,
                     gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS))
-                const shaderInfo = initializeShaders(gl);
+                const shaderInfo = initShaders(gl);
                 const buffers = initBuffers(gl, options);
                 drawScene(gl, shaderInfo, buffers, options);
             }
 
-            function initializeShaders(gl) {
+            function initShaders(gl) {
                 const vertexSource = document.getElementById("vertex-shader").text
                 const fragmentSource = document.getElementById("fragment-shader").text
                 const feedbackVars = ['newPos', 'newV'];
@@ -107,9 +108,9 @@
                 const shaderInfo = {
                     program: shaderProgram,
                     attribLocations: {
-                        vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-                        vertexVelocity: gl.getAttribLocation(shaderProgram, 'aVertexVelocity'),
-                        myIndex: gl.getAttribLocation(shaderProgram, 'myIndex'),
+                        oldPos: gl.getAttribLocation(shaderProgram, 'oldPos'),
+                        oldV: gl.getAttribLocation(shaderProgram, 'oldV'),
+                        currentIndex: gl.getAttribLocation(shaderProgram, 'currentIndex'),
                     },
                     uniformLocations: {
                         allPositions: gl.getUniformLocation(shaderProgram, 'allPositions'),
@@ -192,9 +193,9 @@
                 var stride = 0;
                 var offset = 0;
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-                gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition,
+                gl.vertexAttribPointer(programInfo.attribLocations.oldPos,
                     size, type, normalize, stride, offset);
-                gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+                gl.enableVertexAttribArray(programInfo.attribLocations.oldPos);
 
                 // TODO: pass all positions on first frame too.
 
@@ -204,9 +205,9 @@
                 var stride = 0;
                 var offset = 0;
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffers.velocities);
-                gl.vertexAttribPointer(programInfo.attribLocations.vertexVelocity,
+                gl.vertexAttribPointer(programInfo.attribLocations.oldV,
                     size, type, normalize, stride, offset);
-                gl.enableVertexAttribArray(programInfo.attribLocations.vertexVelocity);
+                gl.enableVertexAttribArray(programInfo.attribLocations.oldV);
 
                 var size = 1;
                 var type = gl.INT;
@@ -214,9 +215,9 @@
                 var stride = 0;
                 var offset = 0;
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffers.indices);
-                gl.vertexAttribIPointer(programInfo.attribLocations.myIndex,
+                gl.vertexAttribIPointer(programInfo.attribLocations.currentIndex,
                     size, type, normalize, stride, offset);
-                gl.enableVertexAttribArray(programInfo.attribLocations.myIndex);
+                gl.enableVertexAttribArray(programInfo.attribLocations.currentIndex);
 
                 gl.useProgram(programInfo.program);
 
@@ -271,9 +272,9 @@
                         var offset = 0;
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
 
-                        gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition,
+                        gl.vertexAttribPointer(programInfo.attribLocations.oldPos,
                             size, type, normalize, stride, offset);
-                        gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+                        gl.enableVertexAttribArray(programInfo.attribLocations.oldPos);
 
                         gl.uniform2fv(programInfo.uniformLocations.allPositions, output);
 
@@ -283,9 +284,9 @@
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.velocities);
                         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(output), gl.DYNAMIC_DRAW);
 
-                        gl.vertexAttribPointer(programInfo.attribLocations.vertexVelocity,
+                        gl.vertexAttribPointer(programInfo.attribLocations.oldV,
                             size, type, normalize, stride, offset);
-                        gl.enableVertexAttribArray(programInfo.attribLocations.vertexVelocity);
+                        gl.enableVertexAttribArray(programInfo.attribLocations.oldV);
 
                         nextFrame(gl, programInfo, buffers, options);
                     } else {
