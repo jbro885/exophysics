@@ -31,6 +31,7 @@
             in vec4 aVertexPosition;
             in vec4 aVertexVelocity;
             in vec4 aVertexColor;
+            in int myIndex;
             uniform vec2 allPositions[4];
             out vec2 newPos;
             out vec2 newV;
@@ -39,10 +40,11 @@
             void main() {
                 gl_Position = aVertexPosition;
                 vColor = aVertexColor;
+                float dampening = 1.0 - 0.003 * float(myIndex + 1);
                 newPos.x = aVertexPosition.x + aVertexVelocity.x;
                 newPos.y = aVertexPosition.y + aVertexVelocity.y;
-                newV.x = aVertexVelocity.x * 0.99;
-                newV.y = aVertexVelocity.y * 0.99;
+                newV.x = aVertexVelocity.x * dampening;
+                newV.y = aVertexVelocity.y * dampening;
             }
         </script>
         <script type="x-shader/x-fragment" id="fragment-shader">

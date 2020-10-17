@@ -23,6 +23,7 @@ function initializeWebGL() {
             vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
             vertexVelocity: gl.getAttribLocation(shaderProgram, 'aVertexVelocity'),
             vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
+            myIndex: gl.getAttribLocation(shaderProgram, 'myIndex'),
         },
         uniformLocations: {
             allPositions: gl.getUniformLocation(shaderProgram, 'allPositions'),
