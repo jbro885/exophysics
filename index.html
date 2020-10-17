@@ -177,7 +177,7 @@
                 gl.enableVertexAttribArray(shaderInfo.attribLocations.oldPos);
 
                 // initiate with random velocity
-                const oldV = [...Array(param.particleLimit * 2)].map(_=>(Math.random() * 2 - 1) * 0.005);
+                const oldV = [...Array(param.particleLimit * 2)].map(_=>(Math.random() * 2 - 1) * 0.002);
                 const oldVBuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, oldVBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oldV), gl.DYNAMIC_DRAW);
