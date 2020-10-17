@@ -269,6 +269,11 @@
                 // this function will call itself in a loop forever.
                 gl.clearColor(0.0, 0.0, 0.0, 1.0);
                 gl.clear(gl.COLOR_BUFFER_BIT);
+                if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
+                    canvas.width = canvas.clientWidth;
+                    canvas.height = canvas.clientHeight;
+                    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+                }
 
                 // update the "mouse" uniform
                 gl.uniform4fv(shaderInfo.uniformLocations.mouse, new Float32Array(
