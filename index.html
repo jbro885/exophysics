@@ -65,8 +65,8 @@
                 if (newPos.y > 1.0) {
                     newPos.y = 1.0;
                 }
-                newV.x = oldV.x - dist.x / 10000.0;
-                newV.y = oldV.y - dist.y / 10000.0;
+                newV.x = oldV.x - dist.x / 1000.0;
+                newV.y = oldV.y - dist.y / 1000.0;
                 color.b = min(1.0, max(0.0, abs(newV.x) * 255.0));
                 color.g = min(1.0, max(0.0, abs(newV.y) * 255.0));
                 color.r = 1.0 - (color.r + color.b) / 2.0;
