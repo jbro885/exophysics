@@ -123,25 +123,27 @@
             }
 
             function initUI(gl, param) {
-                gl.canvas.addEventListener('mousemove', function(e) {
+                gl.canvas.addEventListener('pointermove', function(e) {
                     const rect = canvas.getBoundingClientRect();
                     param.mouseX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
                     param.mouseY = (e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1;
                 });
-                gl.canvas.addEventListener('mousedown', function(e) {
+                gl.canvas.addEventListener('pointerdown', function(e) {
                     const rect = canvas.getBoundingClientRect();
                     param.mouseX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
                     param.mouseY = (e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1;
                     if (e.button == 0) {
                         param.mouseDown = true;
+                        gl.canvas.setPointerCapture(e.pointerId);
                     }
                 });
-                gl.canvas.addEventListener('mouseup', function(e) {
+                gl.canvas.addEventListener('pointerup', function(e) {
                     const rect = canvas.getBoundingClientRect();
                     param.mouseX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
                     param.mouseY = (e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1;
                     if (e.button == 0) {
                         param.mouseDown = false;
+                        gl.canvas.releasePointerCapture(e.pointerId);
                     }
                 });
             }
