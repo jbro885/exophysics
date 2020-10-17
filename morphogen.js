@@ -29,16 +29,6 @@ function initBuffers(gl) {
     gl.bindBuffer(gl.ARRAY_BUFFER, velocityBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(velocities), gl.DYNAMIC_DRAW);
 
-    var colors = [
-        0.0,  1.0,  1.0,  1.0,
-        1.0,  0.0,  0.0,  1.0,
-        0.0,  1.0,  0.0,  1.0,
-        0.0,  0.0,  1.0,  1.0,
-    ];
-    const colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-
     var indices = [0, 1, 2, 3];
     const myIndexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, myIndexBuffer);
@@ -50,7 +40,6 @@ function initBuffers(gl) {
     return {
         position: positionBuffer,
         velocities: velocityBuffer,
-        color: colorBuffer,
         newPos: newPosBuffer,
         newV: newVBuffer,
         indices: myIndexBuffer,
@@ -88,16 +77,6 @@ function drawScene(gl, programInfo, buffers) {
     gl.vertexAttribPointer(programInfo.attribLocations.vertexVelocity,
         size, type, normalize, stride, offset);
     gl.enableVertexAttribArray(programInfo.attribLocations.vertexVelocity);
-
-    var size = 4;
-    var type = gl.FLOAT;
-    var normalize = false;
-    var stride = 0;
-    var offset = 0;
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
-    gl.vertexAttribPointer(programInfo.attribLocations.vertexColor,
-        size, type, normalize, stride, offset);
-    gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
 
     var size = 1;
     var type = gl.INT;

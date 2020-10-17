@@ -13,16 +13,11 @@ function initializeWebGL() {
     const fragmentShaderSource = document.getElementById("fragment-shader").text
     const shaderProgram = createProgram(gl, vertexShaderSource, fragmentShaderSource);
 
-    // Collect all the info needed to use the shader program.
-    // Look up which attributes our shader program is using
-    // for aVertexPosition, aVevrtexColor and also
-    // look up uniform locations.
     const programInfo = {
         program: shaderProgram,
         attribLocations: {
             vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
             vertexVelocity: gl.getAttribLocation(shaderProgram, 'aVertexVelocity'),
-            vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
             myIndex: gl.getAttribLocation(shaderProgram, 'myIndex'),
         },
         uniformLocations: {
