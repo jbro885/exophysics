@@ -27,13 +27,15 @@
         <script>
             var parameters = {
                 particleLimit: 256, // Keep this in sync with particleLimit in vertex shader!
+                extraUniforms: 1, // Update this when you add more uniforms to shader
                 logFPS: false,
             }
         </script>
         <script type="x-shader/x-vertex" id="vertex-shader">
             #version 300 es
             // parameters
-            const int particleLimit = min(gl_MaxVertexUniformVectors, 256);
+            const int extraUniforms = 1;
+            const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 256);
 
             // data transfer variables
             uniform vec2 allPositions[particleLimit];
@@ -107,7 +109,7 @@
                 }
 
                 param.particleLimit = Math.min(param.particleLimit,
-                    gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS))
+                    gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS) - param.extraUniforms);
                 param.fpsCounter = 0;
                 param.fpsTime = 0;
                 param.mouseX = 0;
