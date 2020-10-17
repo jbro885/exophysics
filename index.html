@@ -13,15 +13,13 @@
             }
             #canvas {
                 margin: 10pt;
-                height: 600px;
-                width: 800px;
                 background: #000;
                 box-shadow: 0 0 10px #429;
             }
         </style>
     </head>
     <body>
-        <canvas id="canvas"></canvas>
+        <canvas id="canvas" width="800" height="600"></canvas>
         <script type="x-shader/x-vertex" id="vertex-shader">
             #version 300 es
             const int particleLimit = 50;
