@@ -92,12 +92,14 @@
                     alert('Unable to initialize WebGL. Your browser or machine may not support it.');
                     return;
                 }
+
+                // post-process the options
                 options.particleLimit = Math.min(options.particleLimit,
                     gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS))
+
                 const shaderInfo = initShaders(gl);
                 const buffers = initBuffers(gl, shaderInfo, options);
-                gl.useProgram(shaderInfo.program);
-                nextFrame(gl, shaderInfo, buffers, options);
+                drawScene(gl, shaderInfo, buffers, options);
             }
 
             function initShaders(gl) {
@@ -117,6 +119,7 @@
                         allPositions: gl.getUniformLocation(shaderProgram, 'allPositions'),
                     },
                 };
+                gl.useProgram(shaderProgram);
                 return shaderInfo;
             }
 
@@ -210,44 +213,47 @@
                 };
             }
 
-            function nextFrame(gl, shaderInfo, buffers, options) {
+            function drawScene(gl, shaderInfo, buffers, options) {
+                // this function will call itself in a loop forever.
                 gl.clearColor(0.0, 0.0, 0.0, 1.0);
                 gl.clear(gl.COLOR_BUFFER_BIT);
 
-                var emptyDataArray = new Float32Array(options.particleLimit * 2);
-                var emptyDataArray2 = new Float32Array(options.particleLimit * 2);
+                // Connect arrays to transform feedback buffers (to read shader output)
+                var newPosArray = new Float32Array(options.particleLimit * 2);
+                var newVArray = new Float32Array(options.particleLimit * 2);
 
                 const tf = gl.createTransformFeedback();
                 gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, tf);
 
                 gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, buffers.newPos);
-                gl.bufferData(gl.TRANSFORM_FEEDBACK_BUFFER, emptyDataArray, gl.STATIC_READ);
-                gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, null);
+                gl.bufferData(gl.TRANSFORM_FEEDBACK_BUFFER, newPosArray, gl.STATIC_READ);
                 gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, buffers.newPos);
 
                 gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, buffers.newV);
-                gl.bufferData(gl.TRANSFORM_FEEDBACK_BUFFER, emptyDataArray2, gl.STATIC_READ);
-                gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, null);
+                gl.bufferData(gl.TRANSFORM_FEEDBACK_BUFFER, newVArray, gl.STATIC_READ);
                 gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, buffers.newV);
+
+                gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, null);
 
                 gl.beginTransformFeedback(gl.POINTS);
 
+                // Draw scene
                 var offset = 0;
                 var vertexCount = options.particleLimit;
                 gl.drawArrays(gl.POINTS, offset, vertexCount);
 
-                var count = 0;
+                // Read shader output
                 gl.endTransformFeedback();
                 gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, null);
 
+                // asynchronous callback that waits for the shader to finish running
                 const fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
                 gl.flush();
-                setTimeout(waitForResult);
-                function waitForResult() {
+                function readShaderOutput() {
                     const status = gl.clientWaitSync(fence, 0, 0);
                     if (status === gl.CONDITION_SATISFIED || status === gl.ALREADY_SIGNALED) {
                         gl.deleteSync(fence);
-                        const output = new Float32Array(vertexCount * 2);
+                        const output = new Float32Array(options.particleLimit * 2);
 
                         // copy the previous "newPos" values to the current "oldPos"
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newPos);
@@ -264,11 +270,12 @@
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldV);
                         gl.bufferData(gl.ARRAY_BUFFER, output, gl.DYNAMIC_DRAW);
 
-                        nextFrame(gl, shaderInfo, buffers, options);
+                        drawScene(gl, shaderInfo, buffers, options);
                     } else {
-                        setTimeout(waitForResult);
+                        setTimeout(readShaderOutput);
                     }
                 }
+                setTimeout(readShaderOutput);
             }
         </script>
     </body>
