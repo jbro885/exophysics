@@ -67,9 +67,9 @@
                 }
                 newV.x = oldV.x - dist.x / 1000.0;
                 newV.y = oldV.y - dist.y / 1000.0;
-                color.b = min(1.0, max(0.0, abs(newV.x) * 255.0));
-                color.g = min(1.0, max(0.0, abs(newV.y) * 255.0));
-                color.r = 1.0 - (color.r + color.b) / 2.0;
+                color.b = min(1.0, max(0.0, abs(newV.x) * 100.0));
+                color.r = min(1.0, max(0.0, abs(newV.y) * 100.0));
+                color.g = 1.0 - (color.r + color.b) / 2.0;
                 color.a = 1.0;
 
                 gl_Position.xy = newPos.xy;
@@ -177,7 +177,7 @@
                 gl.enableVertexAttribArray(shaderInfo.attribLocations.oldPos);
 
                 // initiate with random velocity
-                const oldV = [...Array(param.particleLimit * 2)].map(_=>(Math.random() * 2 - 1) * 0.002);
+                const oldV = [...Array(param.particleLimit * 2)].map(_=>(Math.random() * 2 - 1) * 0.005);
                 const oldVBuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, oldVBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oldV), gl.DYNAMIC_DRAW);
