@@ -20,6 +20,11 @@
     </head>
     <body>
         <canvas id="canvas" width="800" height="600"></canvas>
+        <script>
+            var options = {
+                particleLimit: 256 // Keep this in sync with particleLimit in vertex shader!
+            }
+        </script>
         <script type="x-shader/x-vertex" id="vertex-shader">
             #version 300 es
             const int particleLimit = min(gl_MaxVertexUniformVectors, 256);
@@ -77,18 +82,17 @@
         <script type="application/javascript">
             "use strict";
 
-            main();
+            main(options);
 
-            function main() {
+            function main(options) {
                 const canvas = document.querySelector('#canvas');
                 const gl = canvas.getContext('webgl2');
                 if (!gl) {
                     alert('Unable to initialize WebGL. Your browser or machine may not support it.');
                     return;
                 }
-                var options = {
-                    particleLimit: Math.min(256, gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS)),
-                };
+                options.particleLimit = Math.min(options.particleLimit,
+                    gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS))
                 const shaderInfo = initializeShaders(gl);
                 const buffers = initBuffers(gl, options);
                 drawScene(gl, shaderInfo, buffers, options);
