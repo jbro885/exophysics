@@ -24,6 +24,7 @@
             const float floorGravity = 0.0;
             const float particleGravity = 0.3;
             const float flavorAttraction = -0.1;
+            const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.99;
             const float maxV = 0.02;
             const float pointerRadius = 0.30;
@@ -60,7 +61,7 @@
                     state.z = rand(vec2(random + 4.0)) * 0.5 + 0.5;
                     state.w = rand(vec2(random + 5.0));
                 }
-                int flavor = (state.w < 0.5) ? 1 : -1;
+                int flavor = int(round(state.w * numFlavors));
 
                 state.xy += oldV.xy;
                 state.z += state.y * energyGain;
@@ -86,9 +87,9 @@
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
                         otherState = allPositions[i];
-                        otherFlavor = (otherState.w < 0.5) ? 1 : -1;
+                        otherFlavor = int(round(otherState.w * numFlavors));
                         dist = otherState.xy - state.xy;
-                        newV.xy += dist.xy * flavorAttraction / pow(length(dist.xy), 2.0) * float(flavor * otherFlavor);
+                        newV.xy += dist.xy * flavorAttraction / pow(length(dist.xy), 2.0) * (flavor == otherFlavor ? 1.0 : -1.0);
                     }
                 }
 
@@ -126,6 +127,9 @@
                 color.r = (flavor == 1 ? 1.0 : 0.0);
                 color.g = (flavor == 1 ? 0.3 : 0.7) * alpha;
                 color.b = (flavor == 1 ? 0.0 : 1.0);
+                if (flavor == 2) {
+                    color.r = 1.0;
+                }
                 color.a = 1.0;
 
                 if (pointer.z > 0.0) {
