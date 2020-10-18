@@ -355,9 +355,8 @@
                 const vao = gl.createVertexArray();
                 gl.bindVertexArray(vao);
 
-                // initiate with random positions
+                // Positions from previous frame
                 const oldStateBuffer = gl.createBuffer();
-
                 var size = 4;
                 var type = gl.FLOAT;
                 var normalize = false;
@@ -369,9 +368,8 @@
                     size, type, normalize, stride, offset);
                 gl.enableVertexAttribArray(shaderInfo.attribs.oldState);
 
-                // initiate with random velocity
+                // Velocities from previous frame
                 const oldVBuffer = gl.createBuffer();
-
                 gl.bindBuffer(gl.ARRAY_BUFFER, oldVBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(param.particleLimit * size), gl.DYNAMIC_DRAW);
                 gl.vertexAttribPointer(shaderInfo.attribs.oldV, 4, gl.FLOAT, false, 0, 0);
