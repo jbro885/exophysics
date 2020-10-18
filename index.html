@@ -22,6 +22,7 @@
             const float maxV = 0.1;
             const float pointerRadius = 0.3;
             const float pointerSlowFactor = 0.3;
+            const float pointerPullFactor = 0.1;
             const int extraUniforms = 1;
             const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 256);
 
@@ -86,8 +87,13 @@
                     float dist = distance(newPos.xy, pointer.xy);
                     if (dist <= pointerRadius) {
                         dist /= pointerRadius;
-                        newV.x *= 1.0 - pointerSlowFactor * (1.0 - dist);
-                        newV.y *= 1.0 - pointerSlowFactor * (1.0 - dist);
+                        if (pointerSlowFactor != 0.0) {
+                            newV.x *= 1.0 - pointerSlowFactor * (1.0 - dist);
+                            newV.y *= 1.0 - pointerSlowFactor * (1.0 - dist);
+                        }
+                        if (pointerPullFactor != 0.0) {
+                            newV.xy -= (newPos.xy - pointer.xy) * dist * pointerPullFactor;
+                        }
                     }
                 }
 
