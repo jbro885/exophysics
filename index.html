@@ -151,17 +151,6 @@
                             / pow(length(dist.xy), 2.5)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0);
-
-                        //if (length(dist.xy) < 0.2) {
-                            //newV.xy += dist.xy
-                            //    * flavorAttraction
-                            //    / min(0.5, pow(length(dist.xy), 3.0))
-                            //    //* (0.3 - max(0.0, min(0.3, length(dist.xy))))
-                            //    * (abs(state.w - otherState.w) < 0.04 ? -1.0 : (numFlavors - 1.0));
-                            //if (length(dist.xy) < 0.01) {
-                                //state.w = (9.0 * state.w + otherState.w) / 10.0;
-                            //}
-                        //}
                     }
                 }
 
