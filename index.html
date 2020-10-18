@@ -19,12 +19,11 @@
             // constants
             const int extraUniforms = 1;
             const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 256);
-            const float goldenRatio = 1.61803398874989484820459;
 
             // tweakable parameters
             const float floorGravity = 0.0001;
             const float particleGravity = 0.001;
-            const float bounceDampeningFactor = 0.95;
+            const float bounceDampeningFactor = 0.99;
             const float maxV = 0.01;
             const float pointerRadius = 0.15;
             const float pointerSlowFactor = 0.3;
@@ -42,9 +41,9 @@
             out vec4 newV; // internal attributes: (dx, dy, undef, undef)
             out lowp vec4 color;
 
-            float goldNoise(in vec2 xy, in float seed) {
+            float rand(vec2 co){
                 // https://stackoverflow.com/a/28095165
-                return fract(tan(distance(xy * goldenRatio, xy) * seed) * xy.x);
+                return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
             }
 
             void main() {
@@ -52,12 +51,12 @@
                 newV = oldV;
 
                 if (state.z < 0.001) {
-                    // particle dies
-                    newV.x = goldNoise(state.xy, random) * 2.0 - 1.0;
-                    newV.y = goldNoise(state.xy, random + 1.0) * 2.0 - 1.0;
-                    state.x = goldNoise(state.xy, random + 2.0) * 2.0 - 1.0;
-                    state.y = goldNoise(state.xy, random + 3.0) * 2.0 - 1.0;
-                    state.z = 1.0;
+                    // Particle dies. Ashes to ashes.
+                    newV.x = (rand(vec2(random)) * 2.0 - 1.0) * maxV;
+                    newV.y = (rand(vec2(random + 1.0)) * 2.0 - 1.0) * maxV;
+                    state.x = rand(vec2(random + 2.2)) * 2.0 - 1.0;
+                    state.y = rand(vec2(random + 3.0)) * 2.0 - 1.0;
+                    state.z = rand(vec2(random + 4.0));
                 }
 
                 state.xy += oldV.xy;
@@ -249,7 +248,6 @@
                 gl.bindVertexArray(vao);
 
                 // initiate with random positions
-                const oldState = [...Array(param.particleLimit * 4)].map(_=>Math.random() * 2 - 1);
                 const oldStateBuffer = gl.createBuffer();
 
                 var size = 4;
@@ -258,22 +256,21 @@
                 var stride = 0;
                 var offset = 0;
                 gl.bindBuffer(gl.ARRAY_BUFFER, oldStateBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oldState), gl.DYNAMIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(param.particleLimit * size), gl.DYNAMIC_DRAW);
                 gl.vertexAttribPointer(shaderInfo.attribLocations.oldState,
                     size, type, normalize, stride, offset);
                 gl.enableVertexAttribArray(shaderInfo.attribLocations.oldState);
 
                 // initiate with random velocity
-                const oldV = [...Array(param.particleLimit * 4)].map(_=>(Math.random() * 2 - 1) * 0.005);
                 const oldVBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, oldVBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oldV), gl.DYNAMIC_DRAW);
 
                 var size = 4;
                 var type = gl.FLOAT;
                 var normalize = false;
                 var stride = 0;
                 var offset = 0;
+                gl.bindBuffer(gl.ARRAY_BUFFER, oldVBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(param.particleLimit * size), gl.DYNAMIC_DRAW);
                 gl.vertexAttribPointer(shaderInfo.attribLocations.oldV,
                     size, type, normalize, stride, offset);
                 gl.enableVertexAttribArray(shaderInfo.attribLocations.oldV);
