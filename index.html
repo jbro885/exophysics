@@ -27,8 +27,8 @@
             const float bounceDampeningFactor = 0.99;
             const float maxV = 0.019;
             const float pointerRadius = 0.30;
-            const float pointerSlowFactor = 0.3;
-            const float pointerPullFactor = 0.2;
+            const float pointerSlowFactor = 0.9;
+            const float pointerPullFactor = 0.3;
             const float energyGain = 0.001; /* it's warmer at the top, and the particles will grow */
 
             // data transfer variables
@@ -88,7 +88,7 @@
                         otherState = allPositions[i];
                         otherFlavor = (otherState.w < 0.5) ? 1 : -1;
                         dist = otherState.xy - state.xy;
-                        newV.xy += dist.xy * flavorAttraction / pow(length(dist.xy), 3.0) * float(flavor * otherFlavor);
+                        newV.xy += dist.xy * flavorAttraction / pow(length(dist.xy), 4.0) * float(flavor * otherFlavor);
                     }
                 }
 
