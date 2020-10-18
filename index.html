@@ -23,10 +23,10 @@
             // tweakable parameters
             const float floorGravity = 0.0;
             const float particleGravity = 10.0;
-            const float flavorAttraction = -0.25;
-            const float numFlavors = 3.0;
+            const float flavorAttraction = -0.15;
+            const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.002;
+            const float maxV = 0.02;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.9;
             const float pointerPullFactor = 0.3;
@@ -63,7 +63,7 @@
                 }
                 int flavor = int(floor(state.w * numFlavors));
 
-                state.xy += oldV.xy * pow(float(1+flavor), 2.0);
+                state.xy += oldV.xy / pow(float(1+flavor), 5.0);
                 state.z += state.y * energyGain;
 
                 if (particleGravity != 0.0) {
