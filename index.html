@@ -56,18 +56,23 @@
             // constants
             const int extraUniforms = 1;
             const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 1024);
+            const float PI = 3.1415926535897932384626433832795;
 
             // tweakable parameters
             const float floorGravity = 0.0;
             const float particleGravity = 0.0;
-            const float flavorAttraction = -0.0000035;
-            const float numFlavors = 5.0;
+            const float flavorAttraction = -0.0001;
+            const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.019;
+            const float maxV = 0.01;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.0;
             const float pointerPullFactor = 10.0;
             const float energyGain = 0.001; // it's warmer at the top, and the particles will grow
+            const float attractionAngle = 10.0 / 360.0 * PI;
+            const mat2 attractionRotationMatrix = mat2(
+                cos(attractionAngle), sin(attractionAngle),
+                -sin(attractionAngle), cos(attractionAngle));
 
             // data transfer variables
             uniform vec4 allStates[particleLimit];
@@ -147,8 +152,9 @@
                         otherState = allStates[i];
                         otherFlavor = floor(otherState.w * numFlavors);
                         dist = otherState.xy - state.xy;
+                        dist.xy = (attractionRotationMatrix * dist.xy);
                         newV.xy += dist.xy
-                            / pow(length(dist.xy), 2.5)
+                            / pow(length(dist.xy), 2.0)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0);
                     }
