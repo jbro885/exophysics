@@ -29,17 +29,18 @@
             // data transfer variables
             uniform vec4 allPositions[particleLimit];
             uniform vec4 pointer; /* (x, y, (pressed ? 1.0 : 0.0), 0.0) */
-            in vec4 oldPos;
+            in vec4 oldState;
             in vec4 oldV;
             in int currentIndex;
-            out vec4 newPos;
-            out vec4 newV;
+            out vec4 state; // attributes that other particles know about: (x, y, size, undef)
+            out vec4 newV; // internal attributes: (dx, dy, undef, undef)
             out lowp vec4 color;
 
             void main() {
-                newPos = oldPos;
+                state = oldState;
                 newV = oldV;
-                newPos.xy += oldV.xy;
+                state.xy += oldV.xy;
+                state.z += 0.01;
 
                 if (particleGravity != 0.0) {
                     vec4 particle_pos;
@@ -56,20 +57,20 @@
                 }
 
                 /* Limit Position */
-                if (newPos.x < -1.0) {
-                    newPos.x = -1.0;
+                if (state.x < -1.0) {
+                    state.x = -1.0;
                     newV.x *= -bounceDampeningFactor;
                 }
-                else if (newPos.x > 1.0) {
-                    newPos.x = 1.0;
+                else if (state.x > 1.0) {
+                    state.x = 1.0;
                     newV.x *= -bounceDampeningFactor;
                 }
-                if (newPos.y < -1.0) {
-                    newPos.y = -1.0;
+                if (state.y < -1.0) {
+                    state.y = -1.0;
                     newV.y *= -bounceDampeningFactor;
                 }
-                else if (newPos.y > 1.0) {
-                    newPos.y = 1.0;
+                else if (state.y > 1.0) {
+                    state.y = 1.0;
                     newV.y *= -bounceDampeningFactor;
                 }
 
@@ -84,7 +85,7 @@
                 color.a = 1.0;
 
                 if (pointer.z > 0.0) {
-                    float dist = distance(newPos.xy, pointer.xy);
+                    float dist = distance(state.xy, pointer.xy);
                     if (dist <= pointerRadius) {
                         dist /= pointerRadius;
                         if (pointerSlowFactor != 0.0) {
@@ -92,7 +93,7 @@
                             newV.y *= 1.0 - pointerSlowFactor * (1.0 - dist);
                         }
                         if (pointerPullFactor != 0.0) {
-                            newV.xy -= (newPos.xy - pointer.xy) * dist * pointerPullFactor;
+                            newV.xy -= (state.xy - pointer.xy) * dist * pointerPullFactor;
                         }
                     }
                 }
@@ -101,7 +102,7 @@
                     newV.y -= floorGravity;
                 }
 
-                gl_Position.xy = newPos.xy;
+                gl_Position.xy = state.xy;
                 gl_Position.zw = vec2(0.0, 1.0);
                 gl_PointSize = 4.0 - 2.0 * min(1.0, max(0.0, (newV.x + newV.y) * 50.0));
             }
@@ -170,13 +171,13 @@
             function initShaders(gl) {
                 const vertexSource = document.getElementById("vertex-shader").text
                 const fragmentSource = document.getElementById("fragment-shader").text
-                const feedbackVars = ['newPos', 'newV'];
+                const feedbackVars = ['state', 'newV'];
                 const shaderProgram = createProgram(gl, vertexSource, fragmentSource, feedbackVars);
 
                 const shaderInfo = {
                     program: shaderProgram,
                     attribLocations: {
-                        oldPos: gl.getAttribLocation(shaderProgram, 'oldPos'),
+                        oldState: gl.getAttribLocation(shaderProgram, 'oldState'),
                         oldV: gl.getAttribLocation(shaderProgram, 'oldV'),
                         currentIndex: gl.getAttribLocation(shaderProgram, 'currentIndex'),
                     },
@@ -222,19 +223,19 @@
                 gl.bindVertexArray(vao);
 
                 // initiate with random positions
-                const oldPos = [...Array(param.particleLimit * 4)].map(_=>Math.random() * 2 - 1);
-                const oldPosBuffer = gl.createBuffer();
+                const oldState = [...Array(param.particleLimit * 4)].map(_=>Math.random() * 2 - 1);
+                const oldStateBuffer = gl.createBuffer();
 
                 var size = 4;
                 var type = gl.FLOAT;
                 var normalize = false;
                 var stride = 0;
                 var offset = 0;
-                gl.bindBuffer(gl.ARRAY_BUFFER, oldPosBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oldPos), gl.DYNAMIC_DRAW);
-                gl.vertexAttribPointer(shaderInfo.attribLocations.oldPos,
+                gl.bindBuffer(gl.ARRAY_BUFFER, oldStateBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oldState), gl.DYNAMIC_DRAW);
+                gl.vertexAttribPointer(shaderInfo.attribLocations.oldState,
                     size, type, normalize, stride, offset);
-                gl.enableVertexAttribArray(shaderInfo.attribLocations.oldPos);
+                gl.enableVertexAttribArray(shaderInfo.attribLocations.oldState);
 
                 // initiate with random velocity
                 const oldV = [...Array(param.particleLimit * 4)].map(_=>(Math.random() * 2 - 1) * 0.005);
@@ -267,14 +268,14 @@
                 gl.enableVertexAttribArray(shaderInfo.attribLocations.currentIndex);
 
                 // buffers for reading data from the shader through transform feedback buffers
-                var newPosBuffer = gl.createBuffer();
+                var stateBuffer = gl.createBuffer();
                 var newVBuffer = gl.createBuffer();
 
                 return {
                     vao: vao,
-                    oldPos: oldPosBuffer,
+                    oldState: oldStateBuffer,
                     oldV: oldVBuffer,
-                    newPos: newPosBuffer,
+                    state: stateBuffer,
                     newV: newVBuffer,
                     currentIndex: currentIndexBuffer,
                 };
@@ -295,15 +296,15 @@
                     [param.pointerX, param.pointerY, (param.pointerDown ? 1.0 : 0.0), 0.0]));
 
                 // Initialize reading of shader output through transform feedback buffers
-                var newPosArray = new Float32Array(param.particleLimit * 4);
+                var stateArray = new Float32Array(param.particleLimit * 4);
                 var newVArray = new Float32Array(param.particleLimit * 4);
 
                 const tf = gl.createTransformFeedback();
                 gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, tf);
 
-                gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, buffers.newPos);
-                gl.bufferData(gl.TRANSFORM_FEEDBACK_BUFFER, newPosArray, gl.STATIC_READ);
-                gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, buffers.newPos);
+                gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, buffers.state);
+                gl.bufferData(gl.TRANSFORM_FEEDBACK_BUFFER, stateArray, gl.STATIC_READ);
+                gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, buffers.state);
 
                 gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, buffers.newV);
                 gl.bufferData(gl.TRANSFORM_FEEDBACK_BUFFER, newVArray, gl.STATIC_READ);
@@ -331,10 +332,10 @@
                         gl.deleteSync(fence);
                         const output = new Float32Array(param.particleLimit * 4);
 
-                        // copy the previous "newPos" values to the current "oldPos"
-                        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newPos);
+                        // copy the previous "state" values to the current "oldState"
+                        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.state);
                         gl.getBufferSubData(gl.ARRAY_BUFFER, 0, output);
-                        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldPos);
+                        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldState);
                         gl.bufferData(gl.ARRAY_BUFFER, output, gl.DYNAMIC_DRAW);
 
                         // update the "allPositions" uniform
