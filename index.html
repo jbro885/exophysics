@@ -60,8 +60,8 @@
             // tweakable parameters
             const float floorGravity = 0.0;
             const float particleGravity = 0.0;
-            const float flavorAttraction = -0.00005;
-            const float numFlavors = 3.0;
+            const float flavorAttraction = -0.000001;
+            const float numFlavors = 5.0;
             const float bounceDampeningFactor = 0.99;
             const float maxV = 0.019;
             const float pointerRadius = 0.30;
@@ -148,7 +148,7 @@
                         otherFlavor = floor(otherState.w * numFlavors);
                         dist = otherState.xy - state.xy;
                         newV.xy += dist.xy
-                            / pow(length(dist.xy), 3.0)
+                            / pow(length(dist.xy), 2.5)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0);
 
