@@ -165,6 +165,26 @@
                     }
                 }
 
+                // Movement towards the mouse pointer
+                if (userInput.b == 1.0) {
+                    float dist = distance(state.xy, userInput.xy);
+                    if (dist <= pointerRadius) {
+                        dist /= pointerRadius;
+                        if (pointerSlowFactor != 0.0) {
+                            newV.x *= 1.0 - pointerSlowFactor * (1.0 - dist);
+                            newV.y *= 1.0 - pointerSlowFactor * (1.0 - dist);
+                        }
+                        if (pointerPullFactor != 0.0) {
+                            newV.xy -= (state.xy - userInput.xy) * dist * pointerPullFactor;
+                        }
+                    }
+                }
+
+                // Movement towards the bottom
+                if (floorGravity != 0.0) {
+                    newV.y -= floorGravity;
+                }
+
                 // Limit position
                 if (state.x < -1.0) {
                     state.x = -1.0;
@@ -190,26 +210,6 @@
 
                 // Limit energy
                 if (state.z > 1.0) { state.z = 1.0; }
-
-                // Movement towards the mouse pointer
-                if (userInput.b == 1.0) {
-                    float dist = distance(state.xy, userInput.xy);
-                    if (dist <= pointerRadius) {
-                        dist /= pointerRadius;
-                        if (pointerSlowFactor != 0.0) {
-                            newV.x *= 1.0 - pointerSlowFactor * (1.0 - dist);
-                            newV.y *= 1.0 - pointerSlowFactor * (1.0 - dist);
-                        }
-                        if (pointerPullFactor != 0.0) {
-                            newV.xy -= (state.xy - userInput.xy) * dist * pointerPullFactor;
-                        }
-                    }
-                }
-
-                // Movement towards the bottom
-                if (floorGravity != 0.0) {
-                    newV.y -= floorGravity;
-                }
             }
         </script>
         <script type="x-shader/x-fragment" id="fragment-shader">
