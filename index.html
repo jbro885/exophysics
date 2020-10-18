@@ -21,7 +21,7 @@
             const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 256);
 
             // tweakable parameters
-            const float floorGravity = 0.0001;
+            const float floorGravity = 0.0;
             const float particleGravity = 0.001;
             const float flavorAttraction = -0.0001;
             const float bounceDampeningFactor = 0.99;
@@ -88,7 +88,7 @@
                         otherState = allPositions[i];
                         otherFlavor = (otherState.w < 0.5) ? 1 : -1;
                         dist = otherState.xy - state.xy;
-                        newV.xy += dist.xy * flavorAttraction / length(dist.xy) * float(flavor * otherFlavor);
+                        newV.xy += dist.xy * flavorAttraction / pow(length(dist.xy), 2.0) * float(flavor * otherFlavor);
                     }
                 }
 
