@@ -64,7 +64,7 @@
             const float flavorAttraction = -0.00001;
             const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 1.0;
+            const float maxV = 0.1;
             const float maxAccel = 0.0030;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.0;
@@ -101,6 +101,8 @@
 
                 float flavor = floor(state.w * numFlavors);
                 float weight = (flavor == 0.0 ? 0.005 : 1.0);
+                weight *= 19.0 * length(newV.xy) / maxV + 1.0;
+                weight *= 19.0 * length(newV.pq) / maxV + 1.0;
 
                 color.a = 1.0;
                 if      (flavor == 0.0) { color.rgb = vec3(1.0, 0.3, 0.0); }
