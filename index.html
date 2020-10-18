@@ -22,11 +22,11 @@
 
             // tweakable parameters
             const float floorGravity = 0.0;
-            const float particleGravity = 0.3;
-            const float flavorAttraction = -0.1;
-            const float numFlavors = 2.0;
+            const float particleGravity = 10.0;
+            const float flavorAttraction = -0.25;
+            const float numFlavors = 3.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.02;
+            const float maxV = 0.002;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.9;
             const float pointerPullFactor = 0.3;
@@ -61,9 +61,9 @@
                     state.z = rand(vec2(random + 4.0)) * 0.5 + 0.5;
                     state.w = rand(vec2(random + 5.0));
                 }
-                int flavor = int(round(state.w * numFlavors));
+                int flavor = int(floor(state.w * numFlavors));
 
-                state.xy += oldV.xy;
+                state.xy += oldV.xy * pow(float(1+flavor), 2.0);
                 state.z += state.y * energyGain;
 
                 if (particleGravity != 0.0) {
@@ -87,9 +87,9 @@
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
                         otherState = allPositions[i];
-                        otherFlavor = int(round(otherState.w * numFlavors));
+                        otherFlavor = int(floor(otherState.w * numFlavors));
                         dist = otherState.xy - state.xy;
-                        newV.xy += dist.xy * flavorAttraction / pow(length(dist.xy), 2.0) * (flavor == otherFlavor ? 1.0 : -1.0);
+                        newV.xy += dist.xy * flavorAttraction / pow(length(dist.xy), 3.0) * (flavor == otherFlavor ? (numFlavors - 1.0) : -1.0);
                     }
                 }
 
@@ -124,11 +124,15 @@
                 //color.r = min(1.0, max(0.0, abs(newV.y) * 100.0));
                 //color.g = 1.0 - (color.r + color.b) / 2.0;
                 float alpha = 1.0 - state.z * 0.0; // color.a doesn't seem to work
-                color.r = (flavor == 1 ? 1.0 : 0.0);
-                color.g = (flavor == 1 ? 0.3 : 0.7) * alpha;
-                color.b = (flavor == 1 ? 0.0 : 1.0);
-                if (flavor == 2) {
-                    color.r = 1.0;
+                if (numFlavors <= 2.0) {
+                    color.r = (flavor == 1 ? 1.0 : 0.0);
+                    color.g = (flavor == 1 ? 0.3 : 0.7) * alpha;
+                    color.b = (flavor == 1 ? 0.0 : 1.0);
+                }
+                else if (numFlavors == 3.0) {
+                    color.r = (flavor == 0 ? 1.0 : 0.0);
+                    color.g = (flavor == 1 ? 1.0 : 0.0);
+                    color.b = (flavor == 2 ? 1.0 : 0.0);
                 }
                 color.a = 1.0;
 
