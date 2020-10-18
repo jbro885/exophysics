@@ -21,15 +21,15 @@
             const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 1024);
 
             // tweakable parameters
-            const float floorGravity = 0.0003;
-            const float particleGravity = 100.0;
-            const float flavorAttraction = -0.35;
+            const float floorGravity = 0.0;
+            const float particleGravity = 0.0;
+            const float flavorAttraction = -0.015;
             const float numFlavors = 3.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.002;
+            const float maxV = 0.02;
             const float pointerRadius = 0.30;
-            const float pointerSlowFactor = 0.9;
-            const float pointerPullFactor = 0.3;
+            const float pointerSlowFactor = 0.3;
+            const float pointerPullFactor = 0.5;
             const float energyGain = 0.001; /* it's warmer at the top, and the particles will grow */
 
             // data transfer variables
@@ -61,9 +61,8 @@
                     state.z = rand(vec2(random + 4.0)) * 0.5 + 0.5;
                     state.w = rand(vec2(random + 5.0));
                 }
-                int flavor = int(floor(state.w * numFlavors));
 
-                state.xy += oldV.xy * pow(float(1+flavor), 2.0);
+                state.xy += oldV.xy;
                 state.z += state.y * energyGain;
 
                 if (particleGravity != 0.0) {
@@ -82,14 +81,20 @@
 
                 if (flavorAttraction != 0.0) {
                     vec4 otherState;
-                    int otherFlavor;
                     vec2 dist;
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
                         otherState = allPositions[i];
-                        otherFlavor = int(floor(otherState.w * numFlavors));
                         dist = otherState.xy - state.xy;
-                        newV.xy += dist.xy * flavorAttraction / pow(length(dist.xy), 3.0) * (flavor == otherFlavor ? (numFlavors - 1.0) : -1.0);
+                        if (length(dist.xy) < 0.2) {
+                            newV.xy += dist.xy
+                                * flavorAttraction
+                                * length(dist.xy)
+                                * (abs(state.w - otherState.w) < 0.04 ? -1.0 : (numFlavors - 1.0));
+                            if (length(dist.xy) < 0.01) {
+                                state.w = (9.0 * state.w + otherState.w) / 10.0;
+                            }
+                        }
                     }
                 }
 
@@ -120,20 +125,13 @@
                 if (state.z < 0.0) { state.z = 0.0; }
                 if (state.z > 1.0) { state.z = 1.0; }
 
-                //color.b = min(1.0, max(0.0, abs(newV.x) * 100.0));
-                //color.r = min(1.0, max(0.0, abs(newV.y) * 100.0));
-                //color.g = 1.0 - (color.r + color.b) / 2.0;
-                float alpha = 1.0 - state.z * 0.0; // color.a doesn't seem to work
-                if (numFlavors <= 2.0) {
-                    color.r = (flavor == 1 ? 1.0 : 0.0);
-                    color.g = (flavor == 1 ? 0.3 : 0.7) * alpha;
-                    color.b = (flavor == 1 ? 0.0 : 1.0);
-                }
-                else if (numFlavors == 3.0) {
-                    color.r = (flavor == 0 ? 1.0 : 0.5);
-                    color.g = (flavor == 1 ? 1.0 : 0.0);
-                    color.b = (flavor == 2 ? 1.0 : 0.0);
-                }
+                color.b = min(1.0, max(0.0, state.w));
+                color.r = min(1.0, max(0.0, 1.0-state.w));
+                color.g = 1.0 - (color.r + color.b) / 2.0;
+                //float alpha = 1.0 - state.z * 0.0; // color.a doesn't seem to work
+                //color.r = (flavor == 1 ? 1.0 : 0.0);
+                //color.g = (flavor == 1 ? 0.3 : 0.7);
+                //color.b = (flavor == 1 ? 0.0 : 1.0);
                 color.a = 1.0;
 
                 if (pointer.z > 0.0) {
