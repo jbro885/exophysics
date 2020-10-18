@@ -34,7 +34,7 @@
 
             // data transfer variables
             uniform vec4 allPositions[particleLimit];
-            uniform vec4 pointer; /* (x, y, (pressed ? 1.0 : 0.0), 0.0) */
+            uniform vec4 userInput; /* (x, y, clicking?, paused?), the latter two can be 1.0 or 0.0 */
             in vec4 oldState;
             in vec4 oldV;
             in int currentIndex;
@@ -51,6 +51,24 @@
             void main() {
                 state = oldState;
                 newV = oldV;
+
+                gl_Position.xy = state.xy;
+                gl_Position.zw = vec2(0.0, 1.0);
+                //gl_PointSize = state.z * 4.0 + 2.0;
+                gl_PointSize = 3.0;
+
+                color.b = min(1.0, max(0.0, state.w));
+                color.r = min(1.0, max(0.0, 1.0-state.w));
+                color.g = 1.0 - (color.r + color.b) / 2.0;
+                //float alpha = 1.0 - state.z * 0.0; // color.a doesn't seem to work
+                //color.r = (flavor == 1 ? 1.0 : 0.0);
+                //color.g = (flavor == 1 ? 0.3 : 0.7);
+                //color.b = (flavor == 1 ? 0.0 : 1.0);
+                color.a = 1.0;
+
+                if (userInput.w == 1.0) {
+                    return;  /* The user paused the simulation */
+                }
 
                 if (state.z < 0.001) {
                     // Particle dies. Ashes to ashes.
@@ -126,17 +144,8 @@
                 if (state.z < 0.0) { state.z = 0.0; }
                 if (state.z > 1.0) { state.z = 1.0; }
 
-                color.b = min(1.0, max(0.0, state.w));
-                color.r = min(1.0, max(0.0, 1.0-state.w));
-                color.g = 1.0 - (color.r + color.b) / 2.0;
-                //float alpha = 1.0 - state.z * 0.0; // color.a doesn't seem to work
-                //color.r = (flavor == 1 ? 1.0 : 0.0);
-                //color.g = (flavor == 1 ? 0.3 : 0.7);
-                //color.b = (flavor == 1 ? 0.0 : 1.0);
-                color.a = 1.0;
-
-                if (pointer.z > 0.0) {
-                    float dist = distance(state.xy, pointer.xy);
+                if (userInput.b == 1.0) {
+                    float dist = distance(state.xy, userInput.xy);
                     if (dist <= pointerRadius) {
                         dist /= pointerRadius;
                         if (pointerSlowFactor != 0.0) {
@@ -144,7 +153,7 @@
                             newV.y *= 1.0 - pointerSlowFactor * (1.0 - dist);
                         }
                         if (pointerPullFactor != 0.0) {
-                            newV.xy -= (state.xy - pointer.xy) * dist * pointerPullFactor;
+                            newV.xy -= (state.xy - userInput.xy) * dist * pointerPullFactor;
                         }
                     }
                 }
@@ -152,11 +161,6 @@
                 if (floorGravity != 0.0) {
                     newV.y -= floorGravity;
                 }
-
-                gl_Position.xy = state.xy;
-                gl_Position.zw = vec2(0.0, 1.0);
-                //gl_PointSize = state.z * 4.0 + 2.0;
-                gl_PointSize = 3.0;
             }
         </script>
         <script type="x-shader/x-fragment" id="fragment-shader">
@@ -187,6 +191,7 @@
                 param.pointerX = 0;
                 param.pointerY = 0;
                 param.pointerDown = false;
+                param.paused = false;
 
                 initUI(gl, param);
                 const shaderInfo = initShaders(gl);
@@ -218,6 +223,11 @@
                         gl.canvas.releasePointerCapture(e.pointerId);
                     }
                 });
+                window.addEventListener('keypress', function(e) {
+                    if (e.key === " ") {
+                        param.paused ^= true;
+                    }
+                });
             }
 
             function initShaders(gl) {
@@ -236,7 +246,7 @@
                     },
                     uniformLocations: {
                         allPositions: gl.getUniformLocation(shaderProgram, 'allPositions'),
-                        pointer: gl.getUniformLocation(shaderProgram, 'pointer'),
+                        userInput: gl.getUniformLocation(shaderProgram, 'userInput'),
                     },
                 };
                 gl.useProgram(shaderProgram);
@@ -349,9 +359,11 @@
                     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
                 }
 
-                // update the "pointer" uniform
-                gl.uniform4fv(shaderInfo.uniformLocations.pointer, new Float32Array(
-                    [param.pointerX, param.pointerY, (param.pointerDown ? 1.0 : 0.0), 0.0]));
+                // update the "userInput" uniform
+                var button_pressed = (param.pointerDown ? 1.0 : 0.0);
+                var paused = (param.paused ? 1.0 : 0.0);
+                gl.uniform4fv(shaderInfo.uniformLocations.userInput, new Float32Array(
+                    [param.pointerX, param.pointerY, button_pressed, paused]));
 
                 // Set the random variable
                 var random = [...Array(param.particleLimit)].map(_=>(Math.random()));
