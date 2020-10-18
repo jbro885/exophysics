@@ -336,22 +336,15 @@
                 var offset = 0;
                 gl.bindBuffer(gl.ARRAY_BUFFER, oldStateBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(param.particleLimit * size), gl.DYNAMIC_DRAW);
-                gl.vertexAttribPointer(shaderInfo.attribLocations.oldState,
-                    size, type, normalize, stride, offset);
+                gl.vertexAttribPointer(shaderInfo.attribLocations.oldState, size, type, normalize, stride, offset);
                 gl.enableVertexAttribArray(shaderInfo.attribLocations.oldState);
 
                 // initiate with random velocity
                 const oldVBuffer = gl.createBuffer();
 
-                var size = 4;
-                var type = gl.FLOAT;
-                var normalize = false;
-                var stride = 0;
-                var offset = 0;
                 gl.bindBuffer(gl.ARRAY_BUFFER, oldVBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(param.particleLimit * size), gl.DYNAMIC_DRAW);
-                gl.vertexAttribPointer(shaderInfo.attribLocations.oldV,
-                    size, type, normalize, stride, offset);
+                gl.vertexAttribPointer(shaderInfo.attribLocations.oldV, 4, gl.FLOAT, false, 0, 0);
                 gl.enableVertexAttribArray(shaderInfo.attribLocations.oldV);
 
                 // currentIndex is simply [0, 1, 2, ...]
@@ -360,13 +353,7 @@
                 gl.bindBuffer(gl.ARRAY_BUFFER, currentIndexBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Int32Array(currentIndex), gl.STATIC_DRAW);
 
-                var size = 1;
-                var type = gl.INT;
-                var normalize = false;
-                var stride = 0;
-                var offset = 0;
-                gl.vertexAttribIPointer(shaderInfo.attribLocations.currentIndex,
-                    size, type, normalize, stride, offset);
+                gl.vertexAttribIPointer(shaderInfo.attribLocations.currentIndex, 1, gl.INT, false, 0, 0);
                 gl.enableVertexAttribArray(shaderInfo.attribLocations.currentIndex);
 
                 // random variable, to be used for e.g. seeding a random function
