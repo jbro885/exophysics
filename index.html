@@ -60,16 +60,17 @@
 
             // tweakable parameters
             const float floorGravity = 0.0;
-            const float particleGravity = 0.001;
-            const float flavorAttraction = -0.01;
-            const float numFlavors = 3.0;
+            const float particleGravity = 0.00001;
+            const float flavorAttraction = -0.1;
+            const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.01;
+            const float maxV = 1.0;
+            const float maxAccel = 0.0030;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.0;
             const float pointerPullFactor = 100.0;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
-            const float attractionAngle = 0.0 / 360.0 * PI;
+            const float attractionAngle = 20.0 / 360.0 * PI;
             const mat2 attractionRotationMatrix = mat2(
                 cos(attractionAngle), sin(attractionAngle),
                 -sin(attractionAngle), cos(attractionAngle));
@@ -145,6 +146,7 @@
                     newV.pq -= dist.xy * particleGravity;
                 }
 
+                // Attraction between particles based on flavor
                 if (flavorAttraction != 0.0) {
                     float repulsion = 1.0 * pow(numFlavors - 1.0, 2.0);
                     vec4 otherState;
@@ -157,7 +159,7 @@
                         dist = otherState.xy - state.xy;
                         dist.xy = (attractionRotationMatrix * dist.xy);
                         newV.xy += dist.xy
-                            / pow(length(dist.xy), 3.0)
+                            / pow(length(dist.xy), 4.0)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0);
                     }
@@ -214,6 +216,15 @@
                 }
                 if (length(newV.pq) > maxV) {
                     newV.pq *= vec2(maxV / length(newV.pq));
+                }
+
+                // Limit acceleration
+                vec4 dV = newV - oldV;
+                if (length(dV.xy) > maxAccel) {
+                    newV.xy *= vec2(maxAccel / length(dV.xy));
+                }
+                if (length(dV.pq) > maxAccel) {
+                    newV.pq *= vec2(maxAccel / length(dV.pq));
                 }
 
                 // Limit energy
