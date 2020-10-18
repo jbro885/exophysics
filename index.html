@@ -16,8 +16,12 @@
         <script type="x-shader/x-vertex" id="vertex-shader">
             #version 300 es
             precision lowp float;
+            // constants
+            const int extraUniforms = 1;
+            const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 256);
+            const float goldenRatio = 1.61803398874989484820459;
 
-            // parameters
+            // tweakable parameters
             const float floorGravity = 0.0001;
             const float particleGravity = 0.01;
             const float bounceDampeningFactor = 0.95;
@@ -26,8 +30,6 @@
             const float pointerSlowFactor = 0.3;
             const float pointerPullFactor = 0.1;
             const float sizeGain = 0.01; /* it's warmer at the top, and the particles will grow */
-            const int extraUniforms = 1;
-            const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 256);
 
             // data transfer variables
             uniform vec4 allPositions[particleLimit];
@@ -35,6 +37,7 @@
             in vec4 oldState;
             in vec4 oldV;
             in int currentIndex;
+            in float random;
             out vec4 state; // attributes that other particles know about: (x, y, size, undef)
             out vec4 newV; // internal attributes: (dx, dy, undef, undef)
             out lowp vec4 color;
@@ -113,6 +116,11 @@
                 gl_Position.zw = vec2(0.0, 1.0);
                 gl_PointSize = state.z * 4.0 + 2.0;
             }
+
+            float goldNoise(in vec2 xy, in float seed) {
+                // https://stackoverflow.com/a/28095165
+                return fract(tan(distance(xy * goldenRatio, xy) * seed) * xy.x);
+            }
         </script>
         <script type="x-shader/x-fragment" id="fragment-shader">
             #version 300 es
@@ -187,6 +195,7 @@
                         oldState: gl.getAttribLocation(shaderProgram, 'oldState'),
                         oldV: gl.getAttribLocation(shaderProgram, 'oldV'),
                         currentIndex: gl.getAttribLocation(shaderProgram, 'currentIndex'),
+                        random: gl.getAttribLocation(shaderProgram, 'random'),
                     },
                     uniformLocations: {
                         allPositions: gl.getUniformLocation(shaderProgram, 'allPositions'),
@@ -274,6 +283,12 @@
                     size, type, normalize, stride, offset);
                 gl.enableVertexAttribArray(shaderInfo.attribLocations.currentIndex);
 
+                // random variable, to be used for e.g. seeding a random function
+                const randomBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, randomBuffer);
+                gl.vertexAttribPointer(shaderInfo.attribLocations.random, 1, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(shaderInfo.attribLocations.random);
+
                 // buffers for reading data from the shader through transform feedback buffers
                 var stateBuffer = gl.createBuffer();
                 var newVBuffer = gl.createBuffer();
@@ -285,6 +300,7 @@
                     state: stateBuffer,
                     newV: newVBuffer,
                     currentIndex: currentIndexBuffer,
+                    random: randomBuffer,
                 };
             }
 
@@ -301,6 +317,11 @@
                 // update the "pointer" uniform
                 gl.uniform4fv(shaderInfo.uniformLocations.pointer, new Float32Array(
                     [param.pointerX, param.pointerY, (param.pointerDown ? 1.0 : 0.0), 0.0]));
+
+                // Set the random variable
+                var random = [...Array(param.particleLimit)].map(_=>(Math.random()));
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.random);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(random), gl.DYNAMIC_DRAW);
 
                 // Initialize reading of shader output through transform feedback buffers
                 var stateArray = new Float32Array(param.particleLimit * 4);
