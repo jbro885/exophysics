@@ -64,7 +64,7 @@
             const float flavorAttraction = -0.0001;
             const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.01;
+            const float maxV = 0.005;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.0;
             const float pointerPullFactor = 10.0;
@@ -154,7 +154,7 @@
                         dist = otherState.xy - state.xy;
                         dist.xy = (attractionRotationMatrix * dist.xy);
                         newV.xy += dist.xy
-                            / pow(length(dist.xy), 2.0)
+                            / pow(length(dist.xy), 3.0)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0);
                     }
