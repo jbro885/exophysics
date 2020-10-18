@@ -60,7 +60,7 @@
 
             // tweakable parameters
             const float floorGravity = 0.0;
-            const float particleGravity = 0.000001;
+            const float particleGravity = 0.0;
             const float flavorAttraction = -0.00001;
             const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.99;
@@ -151,7 +151,7 @@
 
                 // Attraction between particles based on flavor
                 if (flavorAttraction != 0.0) {
-                    float repulsion = 1.0 * pow(numFlavors - 1.0, 2.0);
+                    float repulsion = 1.0 * pow(numFlavors - 1.0, 1.0);
                     vec4 otherState;
                     float otherFlavor;
                     vec2 dist;
@@ -162,7 +162,7 @@
                         dist = otherState.xy - state.xy;
                         dist.xy = (attractionRotationMatrix * dist.xy);
                         newV.xy += dist.xy
-                            / pow(length(dist.xy), 3.0)
+                            / pow(length(dist.xy), 1.0)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0)
                             / weight;
