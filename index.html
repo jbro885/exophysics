@@ -21,16 +21,16 @@
             const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 1024);
 
             // tweakable parameters
-            const float floorGravity = 0.0;
-            const float particleGravity = 0.0;
-            const float flavorAttraction = -0.015;
+            const float floorGravity = 0.0015;
+            const float particleGravity = 5000.0;
+            const float flavorAttraction = -0.100;
             const float numFlavors = 3.0;
-            const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.02;
+            const float bounceDampeningFactor = 10.0;
+            const float maxV = 0.003;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.3;
             const float pointerPullFactor = 0.5;
-            const float energyGain = 0.001; /* it's warmer at the top, and the particles will grow */
+            const float energyGain = 0.000; /* it's warmer at the top, and the particles will grow */
 
             // data transfer variables
             uniform vec4 allPositions[particleLimit];
@@ -89,11 +89,12 @@
                         //if (length(dist.xy) < 0.2) {
                             newV.xy += dist.xy
                                 * flavorAttraction
-                                * (0.3 - max(0.0, min(0.3, length(dist.xy))))
+                                / min(0.5, pow(length(dist.xy), 3.0))
+                                //* (0.3 - max(0.0, min(0.3, length(dist.xy))))
                                 * (abs(state.w - otherState.w) < 0.04 ? -1.0 : (numFlavors - 1.0));
-                            if (length(dist.xy) < 0.01) {
-                                state.w = (9.0 * state.w + otherState.w) / 10.0;
-                            }
+                            //if (length(dist.xy) < 0.01) {
+                                //state.w = (9.0 * state.w + otherState.w) / 10.0;
+                            //}
                         //}
                     }
                 }
