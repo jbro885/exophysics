@@ -16,13 +16,14 @@
         <script type="x-shader/x-vertex" id="vertex-shader">
             #version 300 es
             // parameters
-            const float floorGravity = 0.001;
-            const float particleGravity = 0.1;
+            const float floorGravity = 0.0001;
+            const float particleGravity = 0.01;
             const float bounceDampeningFactor = 0.95;
             const float maxV = 0.1;
             const float pointerRadius = 0.15;
             const float pointerSlowFactor = 0.3;
             const float pointerPullFactor = 0.1;
+            const float sizeGain = 0.01; /* it's warmer at the top, and the particles will grow */
             const int extraUniforms = 1;
             const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 256);
 
@@ -40,7 +41,7 @@
                 state = oldState;
                 newV = oldV;
                 state.xy += oldV.xy;
-                state.z += 0.01;
+                state.z += state.y * sizeGain;
 
                 if (particleGravity != 0.0) {
                     vec4 particle_pos;
@@ -79,6 +80,10 @@
                     newV.xy *= vec2(maxV / length(newV.xy));
                 }
 
+                /* Limit Size */
+                if (state.z < 0.0) { state.z = 0.0; }
+                if (state.z > 1.0) { state.z = 1.0; }
+
                 color.b = min(1.0, max(0.0, abs(newV.x) * 100.0));
                 color.r = min(1.0, max(0.0, abs(newV.y) * 100.0));
                 color.g = 1.0 - (color.r + color.b) / 2.0;
@@ -104,7 +109,7 @@
 
                 gl_Position.xy = state.xy;
                 gl_Position.zw = vec2(0.0, 1.0);
-                gl_PointSize = 4.0 - 2.0 * min(1.0, max(0.0, (newV.x + newV.y) * 50.0));
+                gl_PointSize = state.z * 4.0 + 2.0;
             }
         </script>
         <script type="x-shader/x-fragment" id="fragment-shader">
