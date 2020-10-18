@@ -23,13 +23,13 @@
 
             // tweakable parameters
             const float floorGravity = 0.0001;
-            const float particleGravity = 0.01;
+            const float particleGravity = 0.001;
             const float bounceDampeningFactor = 0.95;
-            const float maxV = 0.1;
+            const float maxV = 0.01;
             const float pointerRadius = 0.15;
             const float pointerSlowFactor = 0.3;
             const float pointerPullFactor = 0.1;
-            const float sizeGain = 0.01; /* it's warmer at the top, and the particles will grow */
+            const float sizeGain = 0.001; /* it's warmer at the top, and the particles will grow */
 
             // data transfer variables
             uniform vec4 allPositions[particleLimit];
@@ -42,9 +42,24 @@
             out vec4 newV; // internal attributes: (dx, dy, undef, undef)
             out lowp vec4 color;
 
+            float goldNoise(in vec2 xy, in float seed) {
+                // https://stackoverflow.com/a/28095165
+                return fract(tan(distance(xy * goldenRatio, xy) * seed) * xy.x);
+            }
+
             void main() {
                 state = oldState;
                 newV = oldV;
+
+                if (state.z < 0.001) {
+                    // particle dies
+                    newV.x = goldNoise(state.xy, random) * 2.0 - 1.0;
+                    newV.y = goldNoise(state.xy, random + 1.0) * 2.0 - 1.0;
+                    state.x = goldNoise(state.xy, random + 2.0) * 2.0 - 1.0;
+                    state.y = goldNoise(state.xy, random + 3.0) * 2.0 - 1.0;
+                    state.z = 1.0;
+                }
+
                 state.xy += oldV.xy;
                 state.z += state.y * sizeGain;
 
@@ -115,11 +130,6 @@
                 gl_Position.xy = state.xy;
                 gl_Position.zw = vec2(0.0, 1.0);
                 gl_PointSize = state.z * 4.0 + 2.0;
-            }
-
-            float goldNoise(in vec2 xy, in float seed) {
-                // https://stackoverflow.com/a/28095165
-                return fract(tan(distance(xy * goldenRatio, xy) * seed) * xy.x);
             }
         </script>
         <script type="x-shader/x-fragment" id="fragment-shader">
