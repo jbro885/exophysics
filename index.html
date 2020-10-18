@@ -279,13 +279,13 @@
 
                 const shaderInfo = {
                     program: shaderProgram,
-                    attribLocations: {
+                    attribs: {
                         oldState: gl.getAttribLocation(shaderProgram, 'oldState'),
                         oldV: gl.getAttribLocation(shaderProgram, 'oldV'),
                         currentIndex: gl.getAttribLocation(shaderProgram, 'currentIndex'),
                         random: gl.getAttribLocation(shaderProgram, 'random'),
                     },
-                    uniformLocations: {
+                    uniforms: {
                         allStates: gl.getUniformLocation(shaderProgram, 'allStates'),
                         userInput: gl.getUniformLocation(shaderProgram, 'userInput'),
                     },
@@ -336,16 +336,17 @@
                 var offset = 0;
                 gl.bindBuffer(gl.ARRAY_BUFFER, oldStateBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(param.particleLimit * size), gl.DYNAMIC_DRAW);
-                gl.vertexAttribPointer(shaderInfo.attribLocations.oldState, size, type, normalize, stride, offset);
-                gl.enableVertexAttribArray(shaderInfo.attribLocations.oldState);
+                gl.vertexAttribPointer(shaderInfo.attribs.oldState,
+                    size, type, normalize, stride, offset);
+                gl.enableVertexAttribArray(shaderInfo.attribs.oldState);
 
                 // initiate with random velocity
                 const oldVBuffer = gl.createBuffer();
 
                 gl.bindBuffer(gl.ARRAY_BUFFER, oldVBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(param.particleLimit * size), gl.DYNAMIC_DRAW);
-                gl.vertexAttribPointer(shaderInfo.attribLocations.oldV, 4, gl.FLOAT, false, 0, 0);
-                gl.enableVertexAttribArray(shaderInfo.attribLocations.oldV);
+                gl.vertexAttribPointer(shaderInfo.attribs.oldV, 4, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(shaderInfo.attribs.oldV);
 
                 // currentIndex is simply [0, 1, 2, ...]
                 const currentIndex = [...Array(param.particleLimit)].map((val,key) => key)
@@ -353,14 +354,14 @@
                 gl.bindBuffer(gl.ARRAY_BUFFER, currentIndexBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Int32Array(currentIndex), gl.STATIC_DRAW);
 
-                gl.vertexAttribIPointer(shaderInfo.attribLocations.currentIndex, 1, gl.INT, false, 0, 0);
-                gl.enableVertexAttribArray(shaderInfo.attribLocations.currentIndex);
+                gl.vertexAttribIPointer(shaderInfo.attribs.currentIndex, 1, gl.INT, false, 0, 0);
+                gl.enableVertexAttribArray(shaderInfo.attribs.currentIndex);
 
                 // random variable, to be used for e.g. seeding a random function
                 const randomBuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, randomBuffer);
-                gl.vertexAttribPointer(shaderInfo.attribLocations.random, 1, gl.FLOAT, false, 0, 0);
-                gl.enableVertexAttribArray(shaderInfo.attribLocations.random);
+                gl.vertexAttribPointer(shaderInfo.attribs.random, 1, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(shaderInfo.attribs.random);
 
                 // buffers for reading data from the shader through transform feedback buffers
                 var stateBuffer = gl.createBuffer();
@@ -390,7 +391,7 @@
                 // update the "userInput" uniform
                 var button_pressed = (param.pointerDown ? 1.0 : 0.0);
                 var paused = (param.paused ? 1.0 : 0.0);
-                gl.uniform4fv(shaderInfo.uniformLocations.userInput, new Float32Array(
+                gl.uniform4fv(shaderInfo.uniforms.userInput, new Float32Array(
                     [param.pointerX, param.pointerY, button_pressed, paused]));
 
                 // Set the random variable
@@ -442,7 +443,7 @@
                         gl.bufferData(gl.ARRAY_BUFFER, output, gl.DYNAMIC_DRAW);
 
                         // update the "allStates" uniform
-                        gl.uniform4fv(shaderInfo.uniformLocations.allStates, output);
+                        gl.uniform4fv(shaderInfo.uniforms.allStates, output);
 
                         // copy the previous "newV" values to the current "oldV"
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newV);
