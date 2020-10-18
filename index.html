@@ -70,7 +70,7 @@
             const float energyGain = 0.000; // it's warmer at the top, and the particles will grow
 
             // data transfer variables
-            uniform vec4 allPositions[particleLimit];
+            uniform vec4 allStates[particleLimit];
             uniform vec4 userInput; // (x, y, clicking?, paused?), the latter two can be 1.0 or 0.0
             in vec4 oldState;
             in vec4 oldV;
@@ -128,11 +128,11 @@
                     vec4 center_of_mass;
                     center_of_mass = vec4(0.0, 0.0, 0.0, 0.0);
                     for (int i = 0; i < particleLimit; i++) {
-                        particle_pos = allPositions[i];
+                        particle_pos = allStates[i];
                         center_of_mass += particle_pos;
                     }
                     center_of_mass /= float(particleLimit);
-                    vec4 dist = allPositions[currentIndex] - center_of_mass;
+                    vec4 dist = allStates[currentIndex] - center_of_mass;
                     newV.x -= dist.x * particleGravity;
                     newV.y -= dist.y * particleGravity;
                 }
@@ -142,7 +142,7 @@
                     vec2 dist;
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
-                        otherState = allPositions[i];
+                        otherState = allStates[i];
                         dist = otherState.xy - state.xy;
                         //if (length(dist.xy) < 0.2) {
                             newV.xy += dist.xy
@@ -286,7 +286,7 @@
                         random: gl.getAttribLocation(shaderProgram, 'random'),
                     },
                     uniformLocations: {
-                        allPositions: gl.getUniformLocation(shaderProgram, 'allPositions'),
+                        allStates: gl.getUniformLocation(shaderProgram, 'allStates'),
                         userInput: gl.getUniformLocation(shaderProgram, 'userInput'),
                     },
                 };
@@ -454,8 +454,8 @@
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldState);
                         gl.bufferData(gl.ARRAY_BUFFER, output, gl.DYNAMIC_DRAW);
 
-                        // update the "allPositions" uniform
-                        gl.uniform4fv(shaderInfo.uniformLocations.allPositions, output);
+                        // update the "allStates" uniform
+                        gl.uniform4fv(shaderInfo.uniformLocations.allStates, output);
 
                         // copy the previous "newV" values to the current "oldV"
                         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newV);
