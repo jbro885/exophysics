@@ -24,11 +24,11 @@
             const float floorGravity = 0.0001;
             const float particleGravity = 0.001;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.01;
+            const float maxV = 0.02;
             const float pointerRadius = 0.15;
             const float pointerSlowFactor = 0.3;
             const float pointerPullFactor = 0.1;
-            const float sizeGain = 0.001; /* it's warmer at the top, and the particles will grow */
+            const float energyGain = 0.001; /* it's warmer at the top, and the particles will grow */
 
             // data transfer variables
             uniform vec4 allPositions[particleLimit];
@@ -37,7 +37,7 @@
             in vec4 oldV;
             in int currentIndex;
             in float random;
-            out vec4 state; // attributes that other particles know about: (x, y, size, undef)
+            out vec4 state; // attributes that other particles know about: (x, y, energy, undef)
             out vec4 newV; // internal attributes: (dx, dy, undef, undef)
             out lowp vec4 color;
 
@@ -60,7 +60,7 @@
                 }
 
                 state.xy += oldV.xy;
-                state.z += state.y * sizeGain;
+                state.z += state.y * energyGain;
 
                 if (particleGravity != 0.0) {
                     vec4 particle_pos;
@@ -99,7 +99,7 @@
                     newV.xy *= vec2(maxV / length(newV.xy));
                 }
 
-                /* Limit Size */
+                /* Limit Energy */
                 if (state.z < 0.0) { state.z = 0.0; }
                 if (state.z > 1.0) { state.z = 1.0; }
 
