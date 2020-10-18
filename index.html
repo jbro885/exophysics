@@ -22,10 +22,10 @@
 
             // tweakable parameters
             const float floorGravity = 0.0;
-            const float particleGravity = 0.003;
+            const float particleGravity = 0.03;
             const float flavorAttraction = -0.0001;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.008;
+            const float maxV = 0.019;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.3;
             const float pointerPullFactor = 0.2;
@@ -122,10 +122,11 @@
                 //color.b = min(1.0, max(0.0, abs(newV.x) * 100.0));
                 //color.r = min(1.0, max(0.0, abs(newV.y) * 100.0));
                 //color.g = 1.0 - (color.r + color.b) / 2.0;
-                color.r = flavor == 1 ? 1.0 : 0.0;
-                color.g = flavor == 1 ? 0.3 : 0.7;
-                color.b = flavor == 1 ? 0.0 : 1.0;
-                color.a = 1.0 - state.z * 0.5;
+                float alpha = 1.0 - state.z * 0.0; // color.a doesn't seem to work
+                color.r = (flavor == 1 ? 1.0 : 0.0);
+                color.g = (flavor == 1 ? 0.3 : 0.7) * alpha;
+                color.b = (flavor == 1 ? 0.0 : 1.0);
+                color.a = 1.0;
 
                 if (pointer.z > 0.0) {
                     float dist = distance(state.xy, pointer.xy);
@@ -148,7 +149,7 @@
                 gl_Position.xy = state.xy;
                 gl_Position.zw = vec2(0.0, 1.0);
                 //gl_PointSize = state.z * 4.0 + 2.0;
-                gl_PointSize = 2.0;
+                gl_PointSize = 3.0;
             }
         </script>
         <script type="x-shader/x-fragment" id="fragment-shader">
