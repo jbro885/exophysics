@@ -60,7 +60,7 @@
 
             // tweakable parameters
             const float floorGravity = 0.0;
-            const float particleGravity = 0.0;
+            const float particleGravity = 0.01;
             const float flavorAttraction = -0.00001;
             const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.99;
@@ -100,9 +100,9 @@
                 gl_PointSize = state.z * 3.0 + 1.0;
 
                 float flavor = floor(state.w * numFlavors);
-                float weight = (flavor == 0.0 ? 0.005 : 1.0);
+                float weight = (flavor == 0.0 ? 0.05 : 1.0);
                 weight *= 1.0 * length(newV.xy) / maxV + 1.0;
-                weight *= 1.0 * length(newV.pq) / maxV + 1.0;
+                //weight *= 1.0 * length(newV.pq) / maxV + 1.0;
 
                 color.a = 1.0;
                 if      (flavor == 0.0) { color.rgb = vec3(1.0, 0.3, 0.0); }
@@ -119,8 +119,8 @@
                 if (state.z < 0.001) {
                     newV.x = (rand(vec2(random + 0.0)) * 2.0 - 1.0) * maxV / 10.0;
                     newV.y = (rand(vec2(random + 1.0)) * 2.0 - 1.0) * maxV / 10.0;
-                    newV.p = (rand(vec2(random + 2.0)) * 2.0 - 1.0) * maxV / 10.0;
-                    newV.q = (rand(vec2(random + 3.0)) * 2.0 - 1.0) * maxV / 10.0;
+                    //newV.p = (rand(vec2(random + 2.0)) * 2.0 - 1.0) * maxV / 10.0;
+                    //newV.q = (rand(vec2(random + 3.0)) * 2.0 - 1.0) * maxV / 10.0;
                     state.x = rand(vec2(random + 4.0)) * 2.0 - 1.0;
                     state.y = rand(vec2(random + 5.0)) * 2.0 - 1.0;
                     state.z = rand(vec2(random + 6.0)) * 0.5 + 0.5;
@@ -129,7 +129,7 @@
 
                 // Movement
                 state.xy += oldV.xy;
-                state.xy += oldV.pq;
+                //state.xy += oldV.pq;
 
                 // Gain/loss of energy
                 state.z += state.y * energyGain;
@@ -146,7 +146,7 @@
                     center_of_mass /= float(particleLimit);
                     vec4 dist = allStates[currentIndex] - center_of_mass;
                     dist.xy = (attractionRotationMatrix * dist.xy);
-                    newV.pq -= dist.xy * particleGravity / weight;
+                    newV.xy -= dist.xy * particleGravity / weight;
                 }
 
                 // Attraction between particles based on flavor
@@ -182,7 +182,7 @@
                         if (pointerPullFactor != 0.0) {
                             accel = (userInput.xy - state.xy) * dist * pointerPullFactor;
                             newV.xy += accel;
-                            newV.pq += accel;
+                            //newV.pq += accel;
                         }
                     }
                 }
@@ -218,18 +218,18 @@
                 if (length(newV.xy) > maxV) {
                     newV.xy *= vec2(maxV / length(newV.xy));
                 }
-                if (length(newV.pq) > maxV) {
-                    newV.pq *= vec2(maxV / length(newV.pq));
-                }
+                //if (length(newV.pq) > maxV) {
+                //    newV.pq *= vec2(maxV / length(newV.pq));
+                //}
 
                 // Limit acceleration
                 vec4 dV = newV - oldV;
                 if (length(dV.xy) > maxAccel) {
                     newV.xy *= vec2(maxAccel / length(dV.xy));
                 }
-                if (length(dV.pq) > maxAccel) {
-                    newV.pq *= vec2(maxAccel / length(dV.pq));
-                }
+                //if (length(dV.pq) > maxAccel) {
+                //    newV.pq *= vec2(maxAccel / length(dV.pq));
+                //}
 
                 // Limit energy
                 if (state.z > 1.0) { state.z = 1.0; }
