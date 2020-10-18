@@ -61,7 +61,7 @@
             // tweakable parameters
             const float floorGravity = 0.0;
             const float particleGravity = 0.000001;
-            const float flavorAttraction = -1.0;
+            const float flavorAttraction = -0.00001;
             const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.99;
             const float maxV = 1.0;
@@ -70,7 +70,7 @@
             const float pointerSlowFactor = 0.0;
             const float pointerPullFactor = 100.0;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
-            const float attractionAngle = 20.0 / 360.0 * PI;
+            const float attractionAngle = 0.0 / 360.0 * PI;
             const mat2 attractionRotationMatrix = mat2(
                 cos(attractionAngle), sin(attractionAngle),
                 -sin(attractionAngle), cos(attractionAngle));
@@ -100,7 +100,7 @@
                 gl_PointSize = state.z * 3.0 + 1.0;
 
                 float flavor = floor(state.w * numFlavors);
-                float weight = (flavor == 0.0 ? 0.05 : 1.0);
+                float weight = (flavor == 0.0 ? 0.005 : 1.0);
 
                 color.a = 1.0;
                 if      (flavor == 0.0) { color.rgb = vec3(1.0, 0.3, 0.0); }
@@ -115,10 +115,10 @@
 
                 // Initialization, decay, and respawning of particles:
                 if (state.z < 0.001) {
-                    newV.x = (rand(vec2(random)) * 2.0 - 1.0) * maxV;
-                    newV.y = (rand(vec2(random + 1.0)) * 2.0 - 1.0) * maxV;
-                    newV.p = (rand(vec2(random + 2.0)) * 2.0 - 1.0) * maxV;
-                    newV.q = (rand(vec2(random + 3.0)) * 2.0 - 1.0) * maxV;
+                    newV.x = 0.0;
+                    newV.y = 0.0;
+                    newV.p = 0.0;
+                    newV.q = 0.0;
                     state.x = rand(vec2(random + 4.0)) * 2.0 - 1.0;
                     state.y = rand(vec2(random + 5.0)) * 2.0 - 1.0;
                     state.z = rand(vec2(random + 6.0)) * 0.5 + 0.5;
@@ -160,7 +160,7 @@
                         dist = otherState.xy - state.xy;
                         dist.xy = (attractionRotationMatrix * dist.xy);
                         newV.xy += dist.xy
-                            / pow(length(dist.xy), 4.0)
+                            / pow(length(dist.xy), 3.0)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0)
                             / weight;
