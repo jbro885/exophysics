@@ -203,9 +203,7 @@
                 }
 
                 // Movement towards the bottom
-                if (floorGravity != 0.0) {
-                    newV.y -= floorGravity;
-                }
+                newV.y -= floorGravity;
 
                 // Limit position
                 if (state.x < -1.0) {
