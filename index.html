@@ -165,7 +165,7 @@
                         dist = otherState.xy - state.xy;
                         dist.xy = (attractionRotationMatrix * dist.xy);
                         accel += dist.xy
-                            / pow(length(dist.xy), 2.0)
+                            / pow(length(dist.xy), 3.0)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0)
                             / weight;
