@@ -60,12 +60,12 @@
 
             // tweakable parameters
             const float floorGravity = 0.0;
-            const float particleGravity = 0.0;
-            const float flavorAttraction = -0.005;
+            const float particleGravity = 0.005;
+            const float flavorAttraction = -0.05;
             const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.05;
-            const float maxAccel = 0.0001;
+            const float maxV = 0.01;
+            const float maxAccel = 0.01;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.1;
             const float pointerPullFactor = 0.01;
@@ -164,9 +164,17 @@
                         otherState = allStates[i];
                         otherFlavor = floor(otherState.w * numFlavors);
                         dist = otherState.xy - state.xy;
-                        dist.xy = (attractionRotationMatrix * dist.xy);
+                        dist = (attractionRotationMatrix * dist);
+                        if (length(dist) < 0.10) {
+                            accel += dist
+                                / length(dist)
+                                //* pow((length(dist) / 0.10), 1.0)
+                                * flavorAttraction * 100000.0
+                                * (flavor == otherFlavor ? repulsion : -1.0)
+                                / weight;
+                        }
                         accel += dist.xy
-                            / pow(length(dist.xy), 4.0)
+                            / pow(length(dist), 4.0)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0)
                             / weight;
