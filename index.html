@@ -60,12 +60,12 @@
 
             // tweakable parameters
             const float floorGravity = 0.0;
-            const float particleGravity = 0.0005;
-            const float flavorAttraction = -0.0001;
+            const float particleGravity = 0.00002;
+            const float flavorAttraction = -0.00002;
             const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.1;
-            const float maxAccel = 0.0030;
+            const float maxV = 0.01;
+            const float maxAccel = 0.0040;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.0;
             const float pointerPullFactor = 100.0;
@@ -100,11 +100,11 @@
                 gl_PointSize = state.z * 3.0 + 1.0;
 
                 float flavor = floor(state.w * numFlavors);
-                float weight = (flavor == 0.0 ? 0.005 : 1.0);
+                float weight = (flavor == 0.0 ? 0.05 : 1.0);
                 //weight *= 1.0 * length(newV.xy) / maxV + 1.0;
 
                 color.a = 1.0;
-                if      (flavor == 0.0) { color.rgb = vec3(1.0, 0.3, 0.0); }
+                if      (flavor == 0.0) { color.rgb = vec3(1.0, 0.4, 0.0); }
                 else if (flavor == 1.0) { color.rgb = vec3(0.0, 0.7, 1.0); }
                 else if (flavor == 2.0) { color.rgb = vec3(1.0, 1.0, 0.0); }
                 else if (flavor == 3.0) { color.rgb = vec3(1.0, 0.0, 1.0); }
@@ -165,7 +165,7 @@
                         dist = otherState.xy - state.xy;
                         dist.xy = (attractionRotationMatrix * dist.xy);
                         accel += dist.xy
-                            / pow(length(dist.xy), 3.0)
+                            / pow(length(dist.xy), 2.0)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0)
                             / weight;
