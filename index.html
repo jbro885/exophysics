@@ -247,7 +247,7 @@
             precision lowp float;
             in vec4 color;
             out vec4 outColor;
-            // The color is computed by vertex shader to avoid copying uniforms twice.
+            // The color is computed by vertex shader to avoid duplicating variables/constants
             void main() { outColor = color; }
         </script>
         <script type="application/javascript" id="boilerplate">
