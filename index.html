@@ -60,15 +60,15 @@
 
             // tweakable parameters
             const float floorGravity = 0.0;
-            const float particleGravity = 0.00002;
-            const float flavorAttraction = -0.00002;
+            const float particleGravity = 0.01;
+            const float flavorAttraction = -0.002;
             const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.01;
-            const float maxAccel = 0.0040;
+            const float maxV = 0.005;
+            const float maxAccel = 0.004;
             const float pointerRadius = 0.30;
-            const float pointerSlowFactor = 0.0;
-            const float pointerPullFactor = 100.0;
+            const float pointerSlowFactor = 0.1;
+            const float pointerPullFactor = 0.01;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
             const float attractionAngle = 0.0 / 360.0 * PI;
             const mat2 attractionRotationMatrix = mat2(
@@ -100,8 +100,8 @@
                 gl_PointSize = state.z * 3.0 + 1.0;
 
                 float flavor = floor(state.w * numFlavors);
-                float weight = (flavor == 0.0 ? 0.05 : 1.0);
-                //weight *= 1.0 * length(newV.xy) / maxV + 1.0;
+                float weight = (flavor == 0.0 ? 0.005 : 1.0);
+                //weight *= 30.0 * length(newV.xy) / maxV + 1.0;
 
                 color.a = 1.0;
                 if      (flavor == 0.0) { color.rgb = vec3(1.0, 0.4, 0.0); }
@@ -116,8 +116,8 @@
 
                 // Initialization, decay, and respawning of particles:
                 if (state.z < 0.001) {
-                    newV.x = (rand(vec2(random + 0.0)) * 2.0 - 1.0) * maxV / 10.0;
-                    newV.y = (rand(vec2(random + 1.0)) * 2.0 - 1.0) * maxV / 10.0;
+                    newV.x = (rand(vec2(random + 0.0)) * 2.0 - 1.0) * maxV / 1000.0;
+                    newV.y = (rand(vec2(random + 1.0)) * 2.0 - 1.0) * maxV / 1000.0;
                     //newV.p = (rand(vec2(random + 2.0)) * 2.0 - 1.0) * maxV / 10.0;
                     //newV.q = (rand(vec2(random + 3.0)) * 2.0 - 1.0) * maxV / 10.0;
                     state.x = rand(vec2(random + 4.0)) * 2.0 - 1.0;
@@ -165,7 +165,7 @@
                         dist = otherState.xy - state.xy;
                         dist.xy = (attractionRotationMatrix * dist.xy);
                         accel += dist.xy
-                            / pow(length(dist.xy), 3.0)
+                            / pow(length(dist.xy), 4.0)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0)
                             / weight;
@@ -226,10 +226,10 @@
                 }
 
                 // Limit acceleration
-                vec4 dV = newV - oldV;
-                if (length(dV.xy) > maxAccel) {
-                    newV.xy *= vec2(maxAccel / length(dV.xy));
-                }
+                //vec4 dV = newV - oldV;
+                //if (length(dV.xy) > maxAccel) {
+                //    newV.xy *= vec2(maxAccel / length(dV.xy));
+                //}
 
                 // Limit energy
                 if (state.z > 1.0) { state.z = 1.0; }
