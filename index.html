@@ -60,17 +60,17 @@
 
             // tweakable parameters
             const float floorGravity = 0.0;
-            const float particleGravity = 0.01;
-            const float flavorAttraction = -0.002;
+            const float particleGravity = 0.0;
+            const float flavorAttraction = -0.00001;
             const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.005;
-            const float maxAccel = 0.004;
+            const float maxV = 0.01;
+            const float maxAccel = 0.04;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.1;
             const float pointerPullFactor = 0.01;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
-            const float attractionAngle = 0.0 / 360.0 * PI;
+            const float attractionAngle = 90.0 / 360.0 * PI;
             const mat2 attractionRotationMatrix = mat2(
                 cos(attractionAngle), sin(attractionAngle),
                 -sin(attractionAngle), cos(attractionAngle));
@@ -165,7 +165,7 @@
                         dist = otherState.xy - state.xy;
                         dist.xy = (attractionRotationMatrix * dist.xy);
                         accel += dist.xy
-                            / pow(length(dist.xy), 4.0)
+                            / pow(length(dist.xy), 2.0)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0)
                             / weight;
