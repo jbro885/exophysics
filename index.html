@@ -64,7 +64,7 @@
             const float flavorAttraction = -0.05;
             const float numFlavors = 3.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.016;
+            const float maxV = 0.010;
             const float maxAccel = 0.01;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.0;
@@ -172,6 +172,9 @@
                                 * flavorAttraction * 100000000.0
                                 * (flavor == otherFlavor ? repulsion : -1.0)
                                 / weight;
+                        }
+                        if (length(dist) < 0.04) {
+                            state.xy = (85.0 * state.xy + 15.0 * otherState.xy) / 100.0;
                         }
                         accel += dist.xy
                             / pow(length(dist), 4.0)
