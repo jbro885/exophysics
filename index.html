@@ -294,7 +294,7 @@
                     const rect = canvas.getBoundingClientRect();
                     param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
                     param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
-                    if (e.button == 0) {
+                    if (e.button === 0) {
                         param.pointerDown = true;
                         gl.canvas.setPointerCapture(e.pointerId);
                     }
@@ -303,7 +303,7 @@
                     const rect = canvas.getBoundingClientRect();
                     param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
                     param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
-                    if (e.button == 0) {
+                    if (e.button === 0) {
                         param.pointerDown = false;
                         gl.canvas.releasePointerCapture(e.pointerId);
                     }
