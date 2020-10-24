@@ -64,11 +64,11 @@
             const float flavorAttraction = -0.05;
             const float numFlavors = 3.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.004;
+            const float maxV = 0.016;
             const float maxAccel = 0.01;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.0;
-            const float pointerPullFactor = 10.0;
+            const float pointerPullFactor = 0.2;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
             const float attractionAngle = 0.0 / 360.0 * PI;
             const mat2 attractionRotationMatrix = mat2(
@@ -168,7 +168,7 @@
                         if (length(dist) < 0.10) {
                             accel += dist
                                 / length(dist)
-                                * pow((length(dist) * 10.0), 0.2)
+                                * pow((length(dist) * 10.0), 2.0)
                                 * flavorAttraction * 100000000.0
                                 * (flavor == otherFlavor ? repulsion : -1.0)
                                 / weight;
