@@ -69,7 +69,7 @@
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.0;
             const float pointerPullFactor = 0.2;
-            const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
+            const float energyGain = 0.001; // it's warmer at the top, and the particles will grow
             const float attractionAngle = 0.0 / 360.0 * PI;
             const mat2 attractionRotationMatrix = mat2(
                 cos(attractionAngle), sin(attractionAngle),
@@ -154,7 +154,7 @@
 
                 // Attraction between particles based on flavor
                 if (flavorAttraction != 0.0) {
-                    float repulsion = 1.0 * pow(numFlavors - 1.0, 2.0);
+                    float repulsion = 100.0 * pow(numFlavors - 1.0, 2.0);
                     vec4 otherState;
                     float otherFlavor;
                     vec2 dist;
