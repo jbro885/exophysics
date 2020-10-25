@@ -153,6 +153,7 @@
                     vec4 otherState;
                     float otherFlavor;
                     vec2 dist;
+                    float length_dist;
                     vec2 accel;
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
@@ -160,19 +161,20 @@
                         otherFlavor = floor(otherState.w * numFlavors);
                         dist = otherState.xy - state.xy;
                         dist = (attractionRotationMatrix * dist);
-                        if (length(dist) < 0.10) {
+                        length_dist = length(dist);
+                        if (length_dist < 0.10) {
                             accel += dist
-                                / length(dist)
-                                * pow((length(dist) * 10.0), 2.0)
+                                / length_dist
+                                * pow((length_dist * 10.0), 2.0)
                                 * flavorAttraction * 100000000.0
                                 * (flavor == otherFlavor ? repulsion : -1.0)
                                 / weight;
                         }
-                        if (length(dist) < 0.04) {
+                        if (length_dist < 0.04) {
                             state.xy = (85.0 * state.xy + 15.0 * otherState.xy) / 100.0;
                         }
                         accel += dist.xy
-                            / pow(length(dist), 4.0)
+                            / pow(length_dist, 4.0)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0)
                             / weight;
