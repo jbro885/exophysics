@@ -79,11 +79,11 @@
             uniform vec4 allStates[particleLimit];
             uniform vec4 userInput; // (x, y, clicking?, paused?), the latter two can be 1.0 or 0.0
             in vec4 oldState;
-            in vec4 oldV;
+            in vec4 oldVelocity;
             in int currentIndex;
             in float random;
             out vec4 state; // attributes that other particles know about: (x, y, energy, flavor)
-            out vec4 newV; // internal attributes: (x-velocity, y-velocity, undefined, undefined)
+            out vec4 velocity; // internal attributes: (x-velocity, y-velocity, undefined, undefined)
             out lowp vec4 color;
 
             float rand(vec2 co) {
@@ -93,7 +93,7 @@
 
             void main() {
                 state = oldState;
-                newV = oldV;
+                velocity = oldVelocity;
 
                 gl_Position.xy = state.xy;
                 gl_Position.zw = vec2(0.0, 1.0);
@@ -102,7 +102,7 @@
                 float flavor = floor(state.w * numFlavors);
                 float weight = 1.0;
                 //weight *= (flavor == 0.0 ? 0.05 : 1.0);
-                //weight *= 30.0 * length(newV.xy) / maxV + 1.0;
+                //weight *= 30.0 * length(velocity.xy) / maxV + 1.0;
 
                 color.a = 1.0;
                 if      (flavor == 0.0) { color.rgb = vec3(1.0, 0.0, 0.7); }
@@ -114,8 +114,8 @@
 
                 // Initialization, decay, and respawning of particles:
                 if (state.z < 0.001) {
-                    newV.x = (rand(vec2(random + 0.0)) * 2.0 - 1.0) * maxV / 100000.0;
-                    newV.y = (rand(vec2(random + 1.0)) * 2.0 - 1.0) * maxV / 100000.0;
+                    velocity.x = (rand(vec2(random + 0.0)) * 2.0 - 1.0) * maxV / 100000.0;
+                    velocity.y = (rand(vec2(random + 1.0)) * 2.0 - 1.0) * maxV / 100000.0;
                     state.x = rand(vec2(random + 2.0)) * 2.0 - 1.0;
                     state.y = rand(vec2(random + 3.0)) * 2.0 - 1.0;
                     state.z = rand(vec2(random + 4.0)) * 0.5 + 0.5;
@@ -123,7 +123,7 @@
                 }
 
                 // Movement
-                state.xy += oldV.xy;
+                state.xy += oldVelocity.xy;
 
                 // Gain/loss of energy
                 state.z += state.y * energyGain;
@@ -144,7 +144,7 @@
                     if (length(accel) > maxAccel) {
                         accel *= vec2(maxAccel / length(accel));
                     }
-                    newV.xy += accel;
+                    velocity.xy += accel;
                 }
 
                 // Attraction between particles based on flavor
@@ -180,7 +180,7 @@
                     if (length(accel) > maxAccel) {
                         accel *= vec2(maxAccel / length(accel));
                     }
-                    newV.xy += accel;
+                    velocity.xy += accel;
                 }
 
                 // Movement towards the mouse pointer
@@ -190,44 +190,44 @@
                         vec2 accel;
                         dist /= pointerRadius;
                         if (pointerSlowFactor != 0.0) {
-                            newV.x *= 1.0 - pointerSlowFactor * (1.0 - dist);
-                            newV.y *= 1.0 - pointerSlowFactor * (1.0 - dist);
+                            velocity.x *= 1.0 - pointerSlowFactor * (1.0 - dist);
+                            velocity.y *= 1.0 - pointerSlowFactor * (1.0 - dist);
                         }
                         if (pointerPullFactor != 0.0) {
                             accel = (userInput.xy - state.xy) * dist * pointerPullFactor;
-                            newV.xy += accel;
+                            velocity.xy += accel;
                         }
                     }
                 }
 
                 // Movement towards the bottom
-                newV.y -= floorGravity;
+                velocity.y -= floorGravity;
 
                 // Limit position
                 if (state.x < -1.0) {
                     state.x = -1.0;
-                    newV.x *= -bounceDampeningFactor;
-                    newV.p *= -bounceDampeningFactor;
+                    velocity.x *= -bounceDampeningFactor;
+                    velocity.p *= -bounceDampeningFactor;
                 }
                 else if (state.x > 1.0) {
                     state.x = 1.0;
-                    newV.x *= -bounceDampeningFactor;
-                    newV.p *= -bounceDampeningFactor;
+                    velocity.x *= -bounceDampeningFactor;
+                    velocity.p *= -bounceDampeningFactor;
                 }
                 if (state.y < -1.0) {
                     state.y = -1.0;
-                    newV.y *= -bounceDampeningFactor;
-                    newV.q *= -bounceDampeningFactor;
+                    velocity.y *= -bounceDampeningFactor;
+                    velocity.q *= -bounceDampeningFactor;
                 }
                 else if (state.y > 1.0) {
                     state.y = 1.0;
-                    newV.y *= -bounceDampeningFactor;
-                    newV.q *= -bounceDampeningFactor;
+                    velocity.y *= -bounceDampeningFactor;
+                    velocity.q *= -bounceDampeningFactor;
                 }
 
                 // Limit velocity
-                if (length(newV.xy) > maxV) {
-                    newV.xy *= vec2(maxV / length(newV.xy));
+                if (length(velocity.xy) > maxV) {
+                    velocity.xy *= vec2(maxV / length(velocity.xy));
                 }
 
                 // Limit energy
@@ -307,14 +307,14 @@
             function initShaders(gl) {
                 const vertexSource = document.getElementById("vertex-shader").text
                 const fragmentSource = document.getElementById("fragment-shader").text
-                const feedbackVars = ['state', 'newV'];
+                const feedbackVars = ['state', 'velocity'];
                 const shaderProgram = createProgram(gl, vertexSource, fragmentSource, feedbackVars);
 
                 const shaderInfo = {
                     program: shaderProgram,
                     attribs: {
                         oldState: gl.getAttribLocation(shaderProgram, 'oldState'),
-                        oldV: gl.getAttribLocation(shaderProgram, 'oldV'),
+                        oldVelocity: gl.getAttribLocation(shaderProgram, 'oldVelocity'),
                         currentIndex: gl.getAttribLocation(shaderProgram, 'currentIndex'),
                         random: gl.getAttribLocation(shaderProgram, 'random'),
                     },
@@ -373,11 +373,11 @@
                 gl.enableVertexAttribArray(shaderInfo.attribs.oldState);
 
                 // Velocities from previous frame
-                const oldVBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, oldVBuffer);
+                const oldVelocityBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, oldVelocityBuffer);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(param.particleLimit * size), gl.DYNAMIC_DRAW);
-                gl.vertexAttribPointer(shaderInfo.attribs.oldV, 4, gl.FLOAT, false, 0, 0);
-                gl.enableVertexAttribArray(shaderInfo.attribs.oldV);
+                gl.vertexAttribPointer(shaderInfo.attribs.oldVelocity, 4, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(shaderInfo.attribs.oldVelocity);
 
                 // currentIndex is simply [0, 1, 2, ...]
                 const currentIndex = [...Array(param.particleLimit)].map((val,key) => key)
@@ -396,14 +396,14 @@
 
                 // buffers for reading data from the shader through transform feedback buffers
                 var stateBuffer = gl.createBuffer();
-                var newVBuffer = gl.createBuffer();
+                var velocityBuffer = gl.createBuffer();
 
                 return {
                     vao: vao,
                     oldState: oldStateBuffer,
-                    oldV: oldVBuffer,
+                    oldVelocity: oldVelocityBuffer,
                     state: stateBuffer,
-                    newV: newVBuffer,
+                    velocity: velocityBuffer,
                     currentIndex: currentIndexBuffer,
                     random: randomBuffer,
                 };
@@ -432,7 +432,7 @@
 
                 // Initialize reading of shader output through transform feedback buffers
                 var stateArray = new Float32Array(param.particleLimit * 4);
-                var newVArray = new Float32Array(param.particleLimit * 4);
+                var velocityArray = new Float32Array(param.particleLimit * 4);
 
                 const tf = gl.createTransformFeedback();
                 gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, tf);
@@ -441,9 +441,9 @@
                 gl.bufferData(gl.TRANSFORM_FEEDBACK_BUFFER, stateArray, gl.STATIC_READ);
                 gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, buffers.state);
 
-                gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, buffers.newV);
-                gl.bufferData(gl.TRANSFORM_FEEDBACK_BUFFER, newVArray, gl.STATIC_READ);
-                gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, buffers.newV);
+                gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, buffers.velocity);
+                gl.bufferData(gl.TRANSFORM_FEEDBACK_BUFFER, velocityArray, gl.STATIC_READ);
+                gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, buffers.velocity);
 
                 gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, null);
 
@@ -476,10 +476,10 @@
                         // update the "allStates" uniform
                         gl.uniform4fv(shaderInfo.uniforms.allStates, output);
 
-                        // copy the previous "newV" values to the current "oldV"
-                        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.newV);
+                        // copy the previous "velocity" values to the current "oldVelocity"
+                        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.velocity);
                         gl.getBufferSubData(gl.ARRAY_BUFFER, 0, output);
-                        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldV);
+                        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.oldVelocity);
                         gl.bufferData(gl.ARRAY_BUFFER, output, gl.DYNAMIC_DRAW);
 
                         if (param.logFPS) {
