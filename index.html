@@ -162,6 +162,9 @@
                         dist = otherState.xy - state.xy;
                         dist = (attractionRotationMatrix * dist);
                         length_dist = length(dist);
+                        if (length_dist < 0.000001) {
+                            continue;
+                        }
                         if (length_dist < 0.10) {
                             accel += dist
                                 / length_dist
