@@ -95,7 +95,7 @@
                 state = oldState;
                 velocity = oldVelocity;
 
-                float scale = 0.001 + 2.999 / pow(state.z, 6.0); // shrinks from 3.0 to 0.001
+                float scale = 0.001;
 
                 gl_Position.xy = state.xy;
                 gl_Position.zw = vec2(0.0, 1.0);
@@ -163,6 +163,9 @@
                         otherState = allStates[i];
                         otherFlavor = floor(otherState.w * numFlavors);
                         dist = (otherState.xy - state.xy) / scale;
+                        if (flavor == otherFlavor) {
+                            dist /= 25.0;
+                        }
                         dist = (attractionRotationMatrix * dist);
                         length_dist = length(dist);
                         if (length_dist < 0.000001) {
