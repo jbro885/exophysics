@@ -95,9 +95,11 @@
                 state = oldState;
                 velocity = oldVelocity;
 
+                float scale = 0.001 + 2.999 / pow(state.z, 6.0); // shrinks from 3.0 to 0.001
+
                 gl_Position.xy = state.xy;
                 gl_Position.zw = vec2(0.0, 1.0);
-                gl_PointSize = state.z * 3.0 + 1.0;
+                gl_PointSize = 4.0;
 
                 float flavor = floor(state.w * numFlavors);
                 float weight = 1.0;
@@ -118,15 +120,16 @@
                     velocity.y = (rand(vec2(random + 1.0)) * 2.0 - 1.0) * maxV / 100000.0;
                     state.x = rand(vec2(random + 2.0)) * 2.0 - 1.0;
                     state.y = rand(vec2(random + 3.0)) * 2.0 - 1.0;
-                    state.z = rand(vec2(random + 4.0)) * 0.5 + 0.5;
+                    state.z = 1.0;
                     state.w = rand(vec2(random + 5.0));
                 }
+                state.z += 0.0001;
 
                 // Movement
                 state.xy += oldVelocity.xy;
 
                 // Gain/loss of energy
-                state.z += state.y * energyGain;
+                //state.z += state.y * energyGain;
 
                 // Attraction of particles towards each other
                 if (particleGravity != 0.0) {
@@ -138,7 +141,7 @@
                         center_of_mass += particle_pos;
                     }
                     center_of_mass /= float(particleLimit);
-                    vec2 dist = center_of_mass.xy - state.xy;
+                    vec2 dist = (center_of_mass.xy - state.xy) / scale;
                     dist = (attractionRotationMatrix * dist);
                     vec2 accel = dist * particleGravity / weight;
                     if (length(accel) > maxAccel) {
@@ -159,7 +162,7 @@
                         if (i == currentIndex) { continue; }
                         otherState = allStates[i];
                         otherFlavor = floor(otherState.w * numFlavors);
-                        dist = otherState.xy - state.xy;
+                        dist = (otherState.xy - state.xy) / scale;
                         dist = (attractionRotationMatrix * dist);
                         length_dist = length(dist);
                         if (length_dist < 0.000001) {
@@ -236,7 +239,7 @@
                 }
 
                 // Limit energy
-                if (state.z > 1.0) { state.z = 1.0; }
+                //if (state.z > 1.0) { state.z = 1.0; }
             }
         </script>
         <script type="x-shader/x-fragment" id="fragment-shader">
