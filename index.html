@@ -58,9 +58,6 @@
         </script>
         <script type="x-shader/x-vertex" id="vertex-shader">
             #version 300 es
-            precision lowp float;
-            // constants
-            const float PI = 3.1415926535897932384626433832795;
 
             // tweakable parameters
             const float floorGravity = 0.0;
@@ -74,6 +71,7 @@
             const float pointerSlowFactor = 0.0;
             const float pointerPullFactor = 0.2;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
+            const float PI = 3.1415926535897932384626433832795;
             const float attractionAngle = 0.0 / 360.0 * PI;
             const mat2 attractionRotationMatrix = mat2(
                 cos(attractionAngle), sin(attractionAngle),
