@@ -124,10 +124,8 @@
 
                 // Initialization, decay, and respawning of particles:
                 if (state.z < 0.001) {
-                    velocity.x = (rand() * 2.0 - 1.0) * maxV / 100000.0;
-                    velocity.y = (rand() * 2.0 - 1.0) * maxV / 100000.0;
-                    state.x = rand() * 2.0 - 1.0;
-                    state.y = rand() * 2.0 - 1.0;
+                    velocity.xy = (vec2(rand(), rand()) * 2.0 - 1.0) * maxV / 100000.0;
+                    state.xy = vec2(rand(), rand()) * 2.0 - 1.0;
                     state.z = 1.0;
                     state.w = rand();
                 }
