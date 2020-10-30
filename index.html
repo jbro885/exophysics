@@ -273,9 +273,6 @@
                 param.pointerDown = false;
                 param.paused = false;
 
-                console.log('Max. uniforms/particles: ' +
-                    (gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS) - param.extraUniforms));
-
                 initUI(gl, param);
                 const shaderInfo = initShaders(gl);
                 const buffers = initBuffers(gl, shaderInfo, param);
