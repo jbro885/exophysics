@@ -59,7 +59,7 @@
         <script type="x-shader/x-vertex" id="vertex-shader">
             #version 300 es
 
-            // tweakable parameters
+            // Physical Constants
             const float floorGravity = 0.0;
             const float particleGravity = 0.0;
             const float flavorAttraction = -0.05;
@@ -80,7 +80,7 @@
             // Don't change the following line. The JavaScript code below will fill in this value
             const int particleLimit = 0;
 
-            // data transfer variables
+            // Input/output variables
             uniform vec4 allStates[particleLimit];
             uniform vec4 userInput; // (x, y, clicking?, paused?), the latter two can be 1.0 or 0.0
             in vec4 oldState;
@@ -91,8 +91,8 @@
             out vec4 velocity; // internal attributes: (x-velocity, y-velocity, undefined, undefined)
             out lowp vec4 color;
 
+            // A function to generate almost random noise, see https://stackoverflow.com/a/28095165
             float rand(vec2 co) {
-                // https://stackoverflow.com/a/28095165
                 return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
             }
 
