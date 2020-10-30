@@ -19,13 +19,12 @@
 
     And this so-called "HTML file", which is a human-era magic spell that will
     serve as your entrance portal.  The file is self-contained, will run as-is
-    on any modern 2020's web browser with WebGL2 support, and contains 5 parts:
+    on any modern 2020's web browser with WebGL2 support, and contains 4 parts:
 
     1. The HTML backbone
     2. The "parameters" object, for tweaking basic settings
     3. The WebGL2 vertex shader code that describes the laws of physics
-    4. The WebGL2 fragment shader code (ignore this part)
-    5. The JavaScript code that takes care of the uninteresting plumbing
+    4. The JavaScript code that takes care of the uninteresting plumbing
 
     A good place to start is the vertex shader, where you can tweak physical
     constants and laws, and get an intuition for what it takes to maximize the
@@ -252,14 +251,6 @@
                 //if (state.z > 1.0) { state.z = 1.0; }
             }
         </script>
-        <script type="x-shader/x-fragment" id="fragment-shader">
-            #version 300 es
-            precision lowp float;
-            in vec4 color;
-            out vec4 outColor;
-            // The color is computed by vertex shader to avoid duplicating variables/constants
-            void main() { outColor = color; }
-        </script>
         <script type="application/javascript" id="boilerplate">
             "use strict";
 
@@ -328,7 +319,9 @@
 
             function initShaders(gl) {
                 const vertexSource = document.getElementById("vertex-shader").text
-                const fragmentSource = document.getElementById("fragment-shader").text
+                const fragmentSource = `#version 300 es
+                    precision lowp float; in vec4 color; out vec4 outColor;
+                    void main() { outColor = color; }`  // Just output what was put in
                 const feedbackVars = ['state', 'velocity'];
                 const shaderProgram = createProgram(gl, vertexSource, fragmentSource, feedbackVars);
 
