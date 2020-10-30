@@ -160,7 +160,7 @@
 
                 // Attraction between particles based on flavor
                 if (flavorAttraction != 0.0) {
-                    float repulsion = 100.0 * pow(numFlavors - 1.0, 2.0);
+                    float repulsion = 1000.0 * pow(numFlavors - 1.0, 3.0);
                     vec4 otherState;
                     float otherFlavor;
                     vec2 dist;
@@ -171,9 +171,9 @@
                         otherState = allStates[i];
                         otherFlavor = floor(otherState.w * numFlavors);
                         dist = (otherState.xy - state.xy) / scale;
-                        //if (flavor == otherFlavor) {
-                        //    dist /= 25.0;
-                        //}
+                        if (flavor == otherFlavor) {
+                            dist /= 25.0;
+                        }
                         dist = (attractionRotationMatrix * dist);
                         length_dist = length(dist);
                         if (length_dist < 0.000001) {
