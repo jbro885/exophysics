@@ -91,14 +91,17 @@
             out vec4 velocity; // internal attributes: (x-velocity, y-velocity, undefined, undefined)
             out lowp vec4 color;
 
-            // A function to generate almost random noise, see https://stackoverflow.com/a/28095165
-            float rand(vec2 co) {
-                return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+            // This function generates pseudorandom noise, see https://stackoverflow.com/a/28095165
+            float randomSeed = 0.0;
+            float rand() {
+                return fract(sin(dot(vec2(randomSeed++ + float(currentIndex)),
+                                     vec2(12.9898, 78.233))) * 43758.5453);
             }
 
             void main() {
                 state = oldState;
                 velocity = oldVelocity;
+                //randomSeed = random;  // randomize the seed to make each run unique, if desired
 
                 float scale = 0.001;
 
@@ -121,12 +124,12 @@
 
                 // Initialization, decay, and respawning of particles:
                 if (state.z < 0.001) {
-                    velocity.x = (rand(vec2(random + 0.0)) * 2.0 - 1.0) * maxV / 100000.0;
-                    velocity.y = (rand(vec2(random + 1.0)) * 2.0 - 1.0) * maxV / 100000.0;
-                    state.x = rand(vec2(random + 2.0)) * 2.0 - 1.0;
-                    state.y = rand(vec2(random + 3.0)) * 2.0 - 1.0;
+                    velocity.x = (rand() * 2.0 - 1.0) * maxV / 100000.0;
+                    velocity.y = (rand() * 2.0 - 1.0) * maxV / 100000.0;
+                    state.x = rand() * 2.0 - 1.0;
+                    state.y = rand() * 2.0 - 1.0;
                     state.z = 1.0;
-                    state.w = rand(vec2(random + 5.0));
+                    state.w = rand();
                 }
                 state.z += 0.0001;
 
