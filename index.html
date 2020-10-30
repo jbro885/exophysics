@@ -51,8 +51,8 @@
         <canvas id="canvas" style="display: block; height: 100vh; width: 100vw;"></canvas>
         <script>
             var parameters = {
-                particleLimit: 256, // Keep this in sync with particleLimit in vertex shader!
-                extraUniforms: 1, // Update when you add more uniforms. Keep in sync too.
+                particleLimit: 256,
+                extraUniforms: 1, // Besides "allStates", we use 1 more uniform: "userInput"
                 logFPS: true,
             }
         </script>
