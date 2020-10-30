@@ -206,15 +206,12 @@
                 if (userInput.b == 1.0) {
                     float dist = distance(state.xy, userInput.xy);
                     if (dist <= pointerRadius) {
-                        vec2 accel;
-                        dist /= pointerRadius;
+                        dist /= pointerRadius;  // normalize distance to 1.0
                         if (pointerSlowFactor != 0.0) {
-                            velocity.x *= 1.0 - pointerSlowFactor * (1.0 - dist);
-                            velocity.y *= 1.0 - pointerSlowFactor * (1.0 - dist);
+                            velocity.xy *= 1.0 - pointerSlowFactor * (1.0 - dist);
                         }
                         if (pointerPullFactor != 0.0) {
-                            accel = (userInput.xy - state.xy) * dist * pointerPullFactor;
-                            velocity.xy += accel;
+                            velocity.xy += pointerPullFactor * (userInput.xy - state.xy) * dist;
                         }
                     }
                 }
