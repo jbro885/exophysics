@@ -61,18 +61,18 @@
 
             // Physical Constants
             const float floorGravity = 0.0;
-            const float particleGravity = 0.3;
+            const float particleGravity = 0.0;
             const float flavorAttraction = -0.05;
             const float numFlavors = 5.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.01;
+            const float maxV = 0.013;
             const float maxAccel = 0.05;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.0;
             const float pointerPullFactor = 0.2;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
             const float PI = 3.1415926535897932384626433832795;
-            const float attractionAngle = 0.0 / 360.0 * PI;
+            const float attractionAngle = 70.0 / 360.0 * PI;
             const mat2 attractionRotationMatrix = mat2(
                 cos(attractionAngle), sin(attractionAngle),
                 -sin(attractionAngle), cos(attractionAngle));
