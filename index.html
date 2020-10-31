@@ -200,32 +200,6 @@
                     velocity.xy += accel;
                 }
 
-                // Strong close-range interaction
-                float closeInteractionDistance = 0.3;
-                float closeInteractionForce = -5.0;
-                if (closeInteractionDistance != 0.0) {
-                    float distLength;
-                    float otherFlavor;
-                    vec4 otherState;
-                    vec2 dist;
-                    vec2 accel;
-                    for (int i = 0; i < particleLimit; i++) {
-                        otherFlavor = floor(otherState.w * numFlavors);
-                        dist = attractionRotationMatrix * (otherState.xy - state.xy) / scale;
-                        if (flavor != otherFlavor) { continue; }
-                        if (distLength < 0.000001) { continue; }
-                        if (distLength < closeInteractionDistance) {
-                            dist /= closeInteractionDistance;
-                            accel += closeInteractionForce * dist / distLength * (1.0 - dist);
-                        }
-                    }
-                    if (length(accel) > maxAccel) {
-                        accel *= vec2(maxAccel / length(accel));
-                    }
-                    velocity.xy += accel;
-                    //state.xy = (85.0 * state.xy + 15.0 * otherState.xy) / 100.0;
-                }
-
                 // Movement towards the mouse pointer
                 if (userInput.b == 1.0) {
                     float dist = distance(state.xy, userInput.xy);
