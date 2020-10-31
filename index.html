@@ -111,8 +111,8 @@
 
                 float flavor = floor(state.w * numFlavors);
                 float weight = 1.0;
-                //weight *= (flavor == 0.0 ? 0.05 : 1.0);
-                //weight *= 30.0 * length(velocity.xy) / maxV + 1.0;
+                weight *= (flavor == 0.0 ? 0.005 : 1.0);
+                weight *= 1000.0 * length(velocity.xy) / maxV + 1.0;
 
                 color.a = 1.0;
                 if      (flavor == 0.0) { color.rgb = vec3(1.0, 0.0, 0.7); }
@@ -171,9 +171,9 @@
                         otherState = allStates[i];
                         otherFlavor = floor(otherState.w * numFlavors);
                         dist = (otherState.xy - state.xy) / scale;
-                        if (flavor == otherFlavor) {
-                            dist /= 50000.0;
-                        }
+                        //if (flavor == otherFlavor) {
+                            //dist /= 50000.0;
+                        //}
                         dist = (attractionRotationMatrix * dist);
                         length_dist = length(dist);
                         if (length_dist < 0.00000001) {
