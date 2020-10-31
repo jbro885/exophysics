@@ -64,7 +64,7 @@
             const float particleGravity = 0.0000001;
             const float particleGravityPower = 3.0;
             const float flavorAttraction = -0.01;
-            const float flavorAttractionPower = 3.0;
+            const float flavorAttractionPower = 4.0;
             const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.70;
             const float maxAccel = 999999.0;
@@ -74,7 +74,7 @@
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
             const float decayRate = 0.0; // chance that a particle randomly breaks
             const float distanceCutoff = 0.000000001;
-            const float simulationSpeed = 0.000000000001;
+            const float simulationSpeed = 0.0000000000001;
 
             const float PI = 3.1415926535897932384626433832795;
             const float attractionAngle = 0.0 / 360.0 * PI;
@@ -84,10 +84,10 @@
 
             // Derived particle properties, based on flavor
             const float maxVs[] = float[](0.05 / simulationSpeed);
-            const float weights[] = float[](1.0, 2000.0);
+            const float weights[] = float[](0.0001, 1.0);
             const vec3 colors[] = vec3[](
-                vec3(1.0, 0.0, 0.7),
                 vec3(0.0, 1.0, 1.0),
+                vec3(1.0, 0.0, 0.7),
                 vec3(1.0, 0.8, 0.0),
                 vec3(0.0, 0.0, 1.0),
                 vec3(1.0, 0.0, 0.0)
@@ -131,7 +131,7 @@
                 int flavor = getFlavor(state);
                 float maxV = maxVs[flavor];
                 float weight = weights[flavor];
-                weight *= 10000.0 * length(velocity.xy) / maxV + 1.0;
+                //weight *= 10000.0 * length(velocity.xy) / maxV + 1.0;
                 color = vec4(colors[flavor], 1.0);
 
                 // Has the user paused the simulation?
@@ -191,7 +191,7 @@
                         vec2 dist = attractionRotationMatrix * (otherState.xy - state.xy);
                         if (length(dist) < distanceCutoff) { continue; }
                         int otherFlavor = getFlavor(otherState);
-                        dist /= 100.0;
+                        dist /= 10.0;
                         vec2 accel = dist /
                             pow(length(dist), flavorAttractionPower)
                             * flavorAttraction;
@@ -199,7 +199,7 @@
                         if (length(accel) > maxAccel) {
                             accel *= vec2(maxAccel / length(accel));
                         }
-                        velocity.xy += accel * weight;
+                        velocity.xy += accel / weight;
                     }
                 }
 
