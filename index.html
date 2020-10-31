@@ -60,7 +60,7 @@
             #version 300 es
 
             // Physical Constants
-            const float floorGravity = 0.006;
+            const float floorGravity = 0.0;
             const float particleGravity = 100000.0;
             const float flavorAttraction = -0.1;
             const float numFlavors = 3.0;
@@ -70,7 +70,7 @@
             const float pointerSlowFactor = 0.0;
             const float pointerPullFactor = 0.4;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
-            const float decayRate = 0.0005; // chance that a particle randomly breaks
+            const float decayRate = 0.0; // chance that a particle randomly breaks
 
             const float PI = 3.1415926535897932384626433832795;
             const float attractionAngle = 0.0 / 360.0 * PI;
@@ -164,10 +164,10 @@
                         otherWeight = weights[otherFlavor];
                         dist = (otherState.xy - state.xy) / scale;
                         dist = (attractionRotationMatrix * dist);
-                        dist /= 10.0;
+                        dist /= 1000.0;
                         distLength = length(dist);
                         if (distLength < 0.000000001) { continue; }
-                        accel += dist * otherWeight / pow(distLength, 3.0) * particleGravity / weight;
+                        accel += dist * otherWeight / pow(distLength, 4.0) * particleGravity / weight;
                     }
                     if (length(accel) > maxAccel) {
                         accel *= vec2(maxAccel / length(accel));
@@ -191,6 +191,9 @@
                         distLength = length(dist);
                         if (distLength < 0.000000001) {
                             continue;
+                        }
+                        if (flavor == otherFlavor) {
+                            dist /= 10.0;
                         }
                         if (distLength < 0.10) {
                             accel += dist
