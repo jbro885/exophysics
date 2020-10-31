@@ -178,9 +178,9 @@
                         otherState = allStates[i];
                         otherFlavor = int(floor(otherState.w * numFlavors));
                         dist = (otherState.xy - state.xy) / scale;
-                        //if (flavor == otherFlavor) {
-                            //dist /= 25.0;
-                        //}
+                        if (flavor == otherFlavor) {
+                            dist /= 0.5;
+                        }
                         dist = (attractionRotationMatrix * dist);
                         distLength = length(dist);
                         if (distLength < 0.00000001) {
@@ -189,8 +189,8 @@
                         if (distLength < 0.10) {
                             accel += dist
                                 / distLength
-                                * pow((distLength * 10.0), 2.0)
-                                * flavorAttraction * 1000000.0
+                                * pow((distLength * 50.0), 2.0)
+                                * flavorAttraction * 5000000.0
                                 * (flavor == otherFlavor ? repulsion : -1.0)
                                 / weight;
                         }
