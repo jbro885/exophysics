@@ -63,16 +63,16 @@
             const float floorGravity = 0.0;
             const float particleGravity = 0.0;
             const float flavorAttraction = -0.05;
-            const float numFlavors = 5.0;
+            const float numFlavors = 3.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.013;
+            const float maxV = 0.001;
             const float maxAccel = 0.05;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.0;
             const float pointerPullFactor = 0.2;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
             const float PI = 3.1415926535897932384626433832795;
-            const float attractionAngle = 70.0 / 360.0 * PI;
+            const float attractionAngle = 0.0 / 360.0 * PI;
             const mat2 attractionRotationMatrix = mat2(
                 cos(attractionAngle), sin(attractionAngle),
                 -sin(attractionAngle), cos(attractionAngle));
@@ -111,15 +111,15 @@
 
                 float flavor = floor(state.w * numFlavors);
                 float weight = 1.0;
-                weight *= (flavor == 0.0 ? 0.005 : 1.0);
-                weight *= 1000.0 * length(velocity.xy) / maxV + 1.0;
+                weight *= (flavor == 0.0 ? 0.04 : 1.0);
+                //weight *= 1000.0 * length(velocity.xy) / maxV + 1.0;
 
                 color.a = 1.0;
                 if      (flavor == 0.0) { color.rgb = vec3(1.0, 0.0, 0.7); }
                 else if (flavor == 1.0) { color.rgb = vec3(0.0, 1.0, 1.0); }
-                else if (flavor == 2.0) { color.rgb = vec3(1.0, 0.0, 0.0); }
+                else if (flavor == 2.0) { color.rgb = vec3(1.0, 1.0, 0.0); }
                 else if (flavor == 3.0) { color.rgb = vec3(0.0, 0.0, 1.0); }
-                else                    { color.rgb = vec3(1.0, 1.0, 0.0); }
+                else                    { color.rgb = vec3(1.0, 0.0, 0.0); }
 
                 // Has the user paused the simulation?
                 if (userInput.w == 1.0) { return; }
@@ -232,8 +232,8 @@
                 }
 
                 // Limit velocity
-                if (length(velocity.xy) > maxV) {
-                    velocity.xy *= vec2(maxV / length(velocity.xy));
+                if (length(velocity.xy) > maxV / weight) {
+                    velocity.xy *= vec2(maxV / weight / length(velocity.xy));
                 }
 
                 // Limit energy
