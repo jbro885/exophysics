@@ -64,9 +64,10 @@
             const float particleGravity = 0.0;
             const float flavorAttraction = -0.05;
             const float numFlavors = 3.0;
+            const float weights[] = float[](0.0001, 1.0, 100000000.0);
             const float bounceDampeningFactor = 0.99;
             const float maxV = 0.01;
-            const float maxAccel = 0.05;
+            const float maxAccel = 0.01;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.0;
             const float pointerPullFactor = 0.2;
@@ -110,17 +111,16 @@
                 gl_PointSize = 4.0;
 
                 // Derived attributes
-                float flavor = floor(state.w * numFlavors);
-                float weight = 1.0;
-                weight *= (flavor == 0.0 ? 0.0001 : 1.0);
+                int flavor = int(floor(state.w * numFlavors));
+                float weight = weights[flavor];
                 //weight *= 1000.0 * length(velocity.xy) / maxV + 1.0;
 
                 color.a = 1.0;
-                if      (flavor == 0.0) { color.rgb = vec3(1.0, 0.0, 0.7); }
-                else if (flavor == 1.0) { color.rgb = vec3(0.0, 1.0, 1.0); }
-                else if (flavor == 2.0) { color.rgb = vec3(1.0, 1.0, 0.0); }
-                else if (flavor == 3.0) { color.rgb = vec3(0.0, 0.0, 1.0); }
-                else                    { color.rgb = vec3(1.0, 0.0, 0.0); }
+                if      (flavor == 0) { color.rgb = vec3(1.0, 0.0, 0.7); }
+                else if (flavor == 1) { color.rgb = vec3(0.0, 1.0, 1.0); }
+                else if (flavor == 2) { color.rgb = vec3(1.0, 1.0, 0.0); }
+                else if (flavor == 3) { color.rgb = vec3(0.0, 0.0, 1.0); }
+                else                  { color.rgb = vec3(1.0, 0.0, 0.0); }
 
                 // Has the user paused the simulation?
                 if (userInput.w == 1.0) { return; }
@@ -162,7 +162,7 @@
 
                 // Attraction between particles based on flavor
                 if (flavorAttraction != 0.0) {
-                    float otherFlavor;
+                    int otherFlavor;
                     float distLength;
                     vec2 dist;
                     vec2 accel;
@@ -171,7 +171,7 @@
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
                         otherState = allStates[i];
-                        otherFlavor = floor(otherState.w * numFlavors);
+                        otherFlavor = int(floor(otherState.w * numFlavors));
                         dist = (otherState.xy - state.xy) / scale;
                         //if (flavor == otherFlavor) {
                             //dist /= 25.0;
