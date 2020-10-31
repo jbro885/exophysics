@@ -73,7 +73,7 @@
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
             const float decayRate = 0.00003; // chance that a particle randomly breaks
             const float distanceCutoff = 0.000000001;
-            const float simulationSpeed = 0.0000001;
+            const float simulationSpeed = 0.000000001;
 
             const float PI = 3.1415926535897932384626433832795;
             const float attractionAngle = 0.0 / 360.0 * PI;
@@ -202,17 +202,18 @@
                         if (flavor != otherFlavor) {
                             dist /= 100.0;
                         }
-                        if (distLength < 0.10) {
-                            accel += dist
-                                / distLength
-                                * pow((distLength * 100.0), 3.0)
-                                * flavorAttraction * 10000.0
-                                * (flavor == otherFlavor ? repulsion : -1.0)
-                                / weight;
-                        }
+                        //if (distLength < 0.10) {
+                        //    accel += dist
+                        //        / distLength
+                        //        * pow((distLength * 100.0), 3.0)
+                        //        * flavorAttraction * 10000.0
+                        //        * (flavor == otherFlavor ? repulsion : -1.0)
+                        //        / weight;
+                        //}
                         accel += dist.xy
-                            / pow(distLength, 3.0)
-                            * flavorAttraction
+                            / distLength
+                            / pow(distLength * 1000.0, 3.0)
+                            * flavorAttraction * 1000000.0
                             * (flavor == otherFlavor ? repulsion : -1.0)
                             / weight;
                     }
