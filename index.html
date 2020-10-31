@@ -161,6 +161,7 @@
                     vec2 accel = vec2(0.0);
                     vec4 otherState;
                     for (int i = 0; i < particleLimit; i++) {
+                        if (i == currentIndex) { continue; }
                         otherState = allStates[i];
                         otherFlavor = int(floor(otherState.w * numFlavors));
                         otherWeight = weights[otherFlavor];
