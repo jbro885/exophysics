@@ -61,9 +61,9 @@
 
             // Physical Constants
             const float floorGravity = 0.0;
-            const float particleGravity = 0.0;
+            const float particleGravity = 0.001;
             const float flavorAttraction = -0.05;
-            const float numFlavors = 5.0;
+            const float numFlavors = 4.0;
             const float bounceDampeningFactor = 0.99;
             const float maxV = 0.01;
             const float maxAccel = 0.01;
@@ -78,7 +78,7 @@
                 -sin(attractionAngle), cos(attractionAngle));
 
             // Derived particle properties, based on flavor
-            const float weights[] = float[](0.0001, 1.0, 100000000.0, 1.0);
+            const float weights[] = float[](0.0001, 1.0, 10000000.0, 1.0);
             const vec3 colors[] = vec3[](
                 vec3(1.0, 0.0, 0.7),
                 vec3(0.0, 1.0, 1.0),
@@ -124,8 +124,7 @@
                 float weight = weights[flavor];
                 //weight *= 1000.0 * length(velocity.xy) / maxV + 1.0;
 
-                color.a = 1.0;
-                color.rgb = colors[flavor];
+                color = vec4(colors[flavor], 1.0);
 
                 // Has the user paused the simulation?
                 if (userInput.w == 1.0) { return; }
