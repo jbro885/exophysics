@@ -141,17 +141,18 @@
 
                 // Attraction of particles towards each other
                 if (particleGravity != 0.0) {
-                    vec4 particle_pos;
-                    vec4 center_of_mass;
-                    center_of_mass = vec4(0.0, 0.0, 0.0, 0.0);
+                    vec2 dist;
+                    vec2 accel;
+                    vec2 centerOfMass = vec2(0.0);
+                    vec4 otherState;
                     for (int i = 0; i < particleLimit; i++) {
-                        particle_pos = allStates[i];
-                        center_of_mass += particle_pos;
+                        otherState = allStates[i];
+                        centerOfMass += otherState.xy;
                     }
-                    center_of_mass /= float(particleLimit);
-                    vec2 dist = (center_of_mass.xy - state.xy) / scale;
+                    centerOfMass /= float(particleLimit);
+                    dist = (centerOfMass - state.xy) / scale;
                     dist = (attractionRotationMatrix * dist);
-                    vec2 accel = dist * particleGravity / weight;
+                    accel = dist * particleGravity / weight;
                     if (length(accel) > maxAccel) {
                         accel *= vec2(maxAccel / length(accel));
                     }
@@ -160,12 +161,12 @@
 
                 // Attraction between particles based on flavor
                 if (flavorAttraction != 0.0) {
-                    float repulsion = 100.0 * pow(numFlavors - 1.0, 2.0);
-                    vec4 otherState;
                     float otherFlavor;
+                    float distLength;
                     vec2 dist;
-                    float length_dist;
                     vec2 accel;
+                    vec4 otherState;
+                    float repulsion = 100.0 * pow(numFlavors - 1.0, 2.0);
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
                         otherState = allStates[i];
@@ -175,23 +176,20 @@
                             //dist /= 50000.0;
                         //}
                         dist = (attractionRotationMatrix * dist);
-                        length_dist = length(dist);
-                        if (length_dist < 0.00000001) {
+                        distLength = length(dist);
+                        if (distLength < 0.00000001) {
                             continue;
                         }
-                        if (length_dist < 0.10) {
+                        if (distLength < 0.10) {
                             accel += dist
-                                / length_dist
-                                * pow((length_dist * 10.0), 2.0)
+                                / distLength
+                                * pow((distLength * 10.0), 2.0)
                                 * flavorAttraction * 100000000.0
                                 * (flavor == otherFlavor ? repulsion : -1.0)
                                 / weight;
                         }
-                        //if (length_dist < 0.01) {
-                            //state.xy = (85.0 * state.xy + 15.0 * otherState.xy) / 100.0;
-                        //}
                         accel += dist.xy
-                            / pow(length_dist, 4.0)
+                            / pow(distLength, 4.0)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0)
                             / weight;
@@ -200,6 +198,32 @@
                         accel *= vec2(maxAccel / length(accel));
                     }
                     velocity.xy += accel;
+                }
+
+                // Strong close-range interaction
+                float closeInteractionDistance = 0.3;
+                float closeInteractionForce = -5.0;
+                if (closeInteractionDistance != 0.0) {
+                    float distLength;
+                    float otherFlavor;
+                    vec4 otherState;
+                    vec2 dist;
+                    vec2 accel;
+                    for (int i = 0; i < particleLimit; i++) {
+                        otherFlavor = floor(otherState.w * numFlavors);
+                        dist = attractionRotationMatrix * (otherState.xy - state.xy) / scale;
+                        if (flavor != otherFlavor) { continue; }
+                        if (distLength < 0.000001) { continue; }
+                        if (distLength < closeInteractionDistance) {
+                            dist /= closeInteractionDistance;
+                            accel += closeInteractionForce * dist / distLength * (1.0 - dist);
+                        }
+                    }
+                    if (length(accel) > maxAccel) {
+                        accel *= vec2(maxAccel / length(accel));
+                    }
+                    velocity.xy += accel;
+                    //state.xy = (85.0 * state.xy + 15.0 * otherState.xy) / 100.0;
                 }
 
                 // Movement towards the mouse pointer
