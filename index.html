@@ -79,11 +79,11 @@
 
             // Derived particle properties, based on flavor
             const float maxVs[] = float[](0.01, 0.01, 0.006, 0.003);
-            const float weights[] = float[](0.0001, 1.0, 1000000.0, 1.0);
+            const float weights[] = float[](0.0001, 1.0, 5000000.0, 10000.0);
             const vec3 colors[] = vec3[](
                 vec3(1.0, 0.0, 0.7),
                 vec3(0.0, 1.0, 1.0),
-                vec3(1.0, 1.0, 0.0),
+                vec3(0.0, 0.0, 0.0),
                 vec3(0.0, 0.0, 1.0),
                 vec3(1.0, 0.0, 0.0)
             );
@@ -177,11 +177,7 @@
                         if (i == currentIndex) { continue; }
                         otherState = allStates[i];
                         otherFlavor = int(floor(otherState.w * numFlavors));
-                        dist = (otherState.xy - state.xy) / scale;
-                        if (flavor != otherFlavor) {
-                            dist /= 2.0;
-                        }
-                        dist = (attractionRotationMatrix * dist);
+                        dist = attractionRotationMatrix * (otherState.xy - state.xy) / scale;
                         distLength = length(dist);
                         if (distLength < 0.00000001) {
                             continue;
@@ -189,8 +185,8 @@
                         if (distLength < 0.10) {
                             accel += dist
                                 / distLength
-                                * pow((distLength * 50.0), 2.0)
-                                * flavorAttraction * 5000000.0
+                                * pow((distLength * 10.0), 2.0)
+                                * flavorAttraction * 1000000.0
                                 * (flavor == otherFlavor ? repulsion : -1.0)
                                 / weight;
                         }
