@@ -71,6 +71,7 @@
             const float pointerSlowFactor = 0.0;
             const float pointerPullFactor = 0.2;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
+
             const float PI = 3.1415926535897932384626433832795;
             const float attractionAngle = 0.0 / 360.0 * PI;
             const mat2 attractionRotationMatrix = mat2(
@@ -122,8 +123,7 @@
                 // Derived attributes
                 int flavor = int(floor(state.w * numFlavors));
                 float weight = weights[flavor];
-                //weight *= 1000.0 * length(velocity.xy) / maxV + 1.0;
-
+                weight *= 10000.0 * length(velocity.xy) / maxV + 1.0;
                 color = vec4(colors[flavor], 1.0);
 
                 // Has the user paused the simulation?
