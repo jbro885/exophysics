@@ -63,8 +63,7 @@
             const float floorGravity = 0.0;
             const float particleGravity = 0.0;
             const float flavorAttraction = -0.05;
-            const float numFlavors = 3.0;
-            const float weights[] = float[](0.0001, 1.0, 100000000.0);
+            const float numFlavors = 5.0;
             const float bounceDampeningFactor = 0.99;
             const float maxV = 0.01;
             const float maxAccel = 0.01;
@@ -77,6 +76,9 @@
             const mat2 attractionRotationMatrix = mat2(
                 cos(attractionAngle), sin(attractionAngle),
                 -sin(attractionAngle), cos(attractionAngle));
+
+            // Derived particle properties, based on flavor
+            const float weights[] = float[](0.0001, 1.0, 100000000.0, 1.0);
 
             // Don't change the following line. The JavaScript code below will fill in this value
             const int particleLimit = 0;
