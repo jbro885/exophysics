@@ -160,19 +160,17 @@
                     vec2 dist;
                     vec2 accel = vec2(0.0);
                     vec4 otherState;
-                    float distLength;
                     for (int i = 0; i < particleLimit; i++) {
                         otherState = allStates[i];
                         otherFlavor = int(floor(otherState.w * numFlavors));
                         otherWeight = weights[otherFlavor];
                         dist = (otherState.xy - state.xy) / scale;
                         dist = (attractionRotationMatrix * dist);
-                        if (distLength < distanceCutoff) { continue; }
+                        if (length(dist) < distanceCutoff) { continue; }
                         dist /= 100000.0;
-                        distLength = length(dist);
                         accel += dist
                             * otherWeight
-                            / pow(distLength, particleGravityPower)
+                            / pow(length(dist), particleGravityPower)
                             * particleGravity
                             / weight;
                     }
