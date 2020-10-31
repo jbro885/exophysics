@@ -79,6 +79,13 @@
 
             // Derived particle properties, based on flavor
             const float weights[] = float[](0.0001, 1.0, 100000000.0, 1.0);
+            const vec3 colors[] = vec3[](
+                vec3(1.0, 0.0, 0.7),
+                vec3(0.0, 1.0, 1.0),
+                vec3(1.0, 1.0, 0.0),
+                vec3(0.0, 0.0, 1.0),
+                vec3(1.0, 0.0, 0.0)
+            );
 
             // Don't change the following line. The JavaScript code below will fill in this value
             const int particleLimit = 0;
@@ -118,11 +125,7 @@
                 //weight *= 1000.0 * length(velocity.xy) / maxV + 1.0;
 
                 color.a = 1.0;
-                if      (flavor == 0) { color.rgb = vec3(1.0, 0.0, 0.7); }
-                else if (flavor == 1) { color.rgb = vec3(0.0, 1.0, 1.0); }
-                else if (flavor == 2) { color.rgb = vec3(1.0, 1.0, 0.0); }
-                else if (flavor == 3) { color.rgb = vec3(0.0, 0.0, 1.0); }
-                else                  { color.rgb = vec3(1.0, 0.0, 0.0); }
+                color.rgb = colors[flavor];
 
                 // Has the user paused the simulation?
                 if (userInput.w == 1.0) { return; }
