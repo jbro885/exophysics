@@ -70,6 +70,7 @@
             const float pointerSlowFactor = 0.0;
             const float pointerPullFactor = 0.2;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
+            const float decayRate = 0.0001; // chance that a particle randomly breaks
 
             const float PI = 3.1415926535897932384626433832795;
             const float attractionAngle = 0.0 / 360.0 * PI;
@@ -129,6 +130,10 @@
 
                 // Has the user paused the simulation?
                 if (userInput.w == 1.0) { return; }
+
+                if (random < decayRate) {
+                    state.z = 0.0;
+                }
 
                 // Initialization, decay, and respawning of particles:
                 if (state.z < 0.001) {
