@@ -61,10 +61,10 @@
 
             // Physical Constants
             const float floorGravity = 0.0;
-            const float particleGravity = 100000.0;
-            const float particleGravityPower = 6.0;
+            const float particleGravity = 100000000000.0;
+            const float particleGravityPower = 3.0;
             const float flavorAttraction = -1000000.0;
-            const float numFlavors = 4.0;
+            const float numFlavors = 3.0;
             const float bounceDampeningFactor = 0.99;
             const float maxAccel = 999999.0;
             const float pointerRadius = 0.40;
@@ -73,7 +73,7 @@
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
             const float decayRate = 0.00003; // chance that a particle randomly breaks
             const float distanceCutoff = 0.000000001;
-            const float simulationSpeed = 0.002;
+            const float simulationSpeed = 0.0000001;
 
             const float PI = 3.1415926535897932384626433832795;
             const float attractionAngle = 0.0 / 360.0 * PI;
@@ -82,8 +82,8 @@
                 -sin(attractionAngle), cos(attractionAngle));
 
             // Derived particle properties, based on flavor
-            const float maxVs[] = float[](1.0, 1.0, 1.0, 1.0);
-            const float weights[] = float[](0.00000000001, 1.0, 5000.0, 1000.0);
+            const float maxVs[] = float[](0.005 / simulationSpeed);
+            const float weights[] = float[](0.000001, 1.0, 5000.0, 1000.0);
             const vec3 colors[] = vec3[](
                 vec3(1.0, 0.0, 0.7),
                 vec3(0.0, 1.0, 1.0),
@@ -140,7 +140,7 @@
 
                 // Initialization, decay, and respawning of particles:
                 if (state.z < 0.001) {
-                    velocity.xy = (vec2(rand(), rand()) * 2.0 - 1.0) * maxV / 100000.0;
+                    velocity.xy = (vec2(rand(), rand()) * 2.0 - 1.0) * maxV / 10000.0;
                     state.xy = vec2(rand(), rand()) * 2.0 - 1.0;
                     state.z = 1.0;
                     state.w = rand();
@@ -189,7 +189,7 @@
                     vec2 dist;
                     vec2 accel;
                     vec4 otherState;
-                    float repulsion = 10.0 * pow(numFlavors - 1.0, 4.0);
+                    float repulsion = 10.0 * pow(numFlavors - 1.0, 2.0);
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
                         otherState = allStates[i];
