@@ -65,7 +65,7 @@
             const float flavorAttraction = -0.05;
             const float numFlavors = 4.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.01;
+            const float maxV = 0.006;
             const float maxAccel = 0.01;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.0;
@@ -79,7 +79,7 @@
                 -sin(attractionAngle), cos(attractionAngle));
 
             // Derived particle properties, based on flavor
-            const float weights[] = float[](0.0001, 1.0, 10000000.0, 1.0);
+            const float weights[] = float[](0.0001, 1.0, 100000.0, 1.0);
             const vec3 colors[] = vec3[](
                 vec3(1.0, 0.0, 0.7),
                 vec3(0.0, 1.0, 1.0),
@@ -189,7 +189,7 @@
                             accel += dist
                                 / distLength
                                 * pow((distLength * 10.0), 2.0)
-                                * flavorAttraction * 1000000.0
+                                * flavorAttraction * 100000.0
                                 * (flavor == otherFlavor ? repulsion : -1.0)
                                 / weight;
                         }
