@@ -61,7 +61,7 @@
 
             // Physical Constants
             const float floorGravity = 0.0;
-            const float particleGravity = 0.3;
+            const float particleGravity = 0.0;
             const float flavorAttraction = -0.5;
             const float numFlavors = 2.0;
             const float bounceDampeningFactor = 0.99;
@@ -172,7 +172,7 @@
                         otherFlavor = floor(otherState.w * numFlavors);
                         dist = (otherState.xy - state.xy) / scale;
                         if (flavor == otherFlavor) {
-                            dist /= 25.0;
+                            dist /= 15.0;
                         }
                         dist = (attractionRotationMatrix * dist);
                         length_dist = length(dist);
