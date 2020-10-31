@@ -11,71 +11,91 @@
     frontiers.  It takes courage to leave the comfort of the physics of your
     home universe and explore the uncharted worlds of exophysics.
 
-    Along with this letter, you will find a complimentary explorer hat, an
-    exophysics field manual, exochemistry cookbook, and a so-called "HTML file"
-    - a human-era magic spell that will serve as your entrance portal.
+    Along with this letter, you will find:
 
-    This file is self-contained, will run as-is on any modern 2020's web
-    browser with WebGL2 support, and contains the following parts:
+    - One complimentary explorer hat: 👒 (limited edition)
+    - One Exophysics Field Manual: https://exophysics.net/manual.html
+    - One Exochemistry Cookbook: https://exophysics.net/cookbook.html
 
-    1. The HTML scaffolding
+    And this so-called "HTML file", which is a human-era magic spell that will
+    serve as your entrance portal.  The file is self-contained, will run as-is
+    on any modern 2020's web browser with WebGL2 support, and contains 4 parts:
+
+    1. The HTML backbone
     2. The "parameters" object, for tweaking basic settings
     3. The WebGL2 vertex shader code that describes the laws of physics
-    4. The WebGL2 fragment shader code that specifies the color of each particle
-    5. The JavaScript code that takes care of the uninteresting plumbing
+    4. The JavaScript code that takes care of the uninteresting plumbing
 
-    My personal advice is to start by tweaking the vertex shader, and get an
-    intuition for what it takes to maximize the beautiful emergent properties.
-
-    A few pointers:
+    A good place to start is the vertex shader, where you can tweak physical
+    constants and laws, and get an intuition for what it takes to maximize the
+    beautiful emergent properties of a universe.  Additional pointers:
 
     - Website: https://exophysics.net/
     - Code: https://github.com/exophysics/exophysics
     - WebGL2 Tutorial: https://webgl2fundamentals.org/
     - License: Public Domain
 
+    Divine intervention is possible through:
+
+    - Mouse click: Pull particles towards the mouse pointer
+    - Press ".": Step through the simulation, one frame at a time
+    - Space bar: Pause or resume simulation
+
     Finally, I am legally obliged to inform you of the one law of exophysics:
     YOU ARE REQUIRED TO TERMINATE A SIMULATION IMMEDIATELY UPON FINDING
     EVIDENCE OF THE EMERGENCE OF SENTIENT CREATURES CAPABLE OF SUFFERING.
 
-    Your guide,
-    Q.
+    With that, 旅行愉快, buen viaje, счастливого пути, et un bon voyage!
     -->
     <body style="margin: 0; background: black;">
         <canvas id="canvas" style="display: block; height: 100vh; width: 100vw;"></canvas>
         <script>
             var parameters = {
-                particleLimit: 256, // Keep this in sync with particleLimit in vertex shader!
-                extraUniforms: 1, // Update when you add more uniforms. Keep in sync too.
+                particleLimit: 256,
+                extraUniforms: 1, // Besides "allStates", we use 1 more uniform: "userInput"
                 logFPS: true,
             }
         </script>
         <script type="x-shader/x-vertex" id="vertex-shader">
             #version 300 es
-            precision lowp float;
-            // constants
-            const int extraUniforms = 1;
-            const int particleLimit = min(gl_MaxVertexUniformVectors - extraUniforms, 256);
-            const float PI = 3.1415926535897932384626433832795;
 
-            // tweakable parameters
+            // Physical Constants
             const float floorGravity = 0.0;
             const float particleGravity = 0.0;
+            const float particleGravityPower = 3.0;
             const float flavorAttraction = -0.05;
             const float numFlavors = 3.0;
             const float bounceDampeningFactor = 0.99;
-            const float maxV = 0.010;
             const float maxAccel = 0.01;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.0;
             const float pointerPullFactor = 0.2;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
+            const float decayRate = 0.0; // chance that a particle randomly breaks
+            const float distanceCutoff = 0.000001;
+            const float simulationSpeed = 1.0;
+
+            const float PI = 3.1415926535897932384626433832795;
             const float attractionAngle = 0.0 / 360.0 * PI;
             const mat2 attractionRotationMatrix = mat2(
                 cos(attractionAngle), sin(attractionAngle),
                 -sin(attractionAngle), cos(attractionAngle));
 
-            // data transfer variables
+            // Derived particle properties, based on flavor
+            const float maxVs[] = float[](0.01 / simulationSpeed);
+            const float weights[] = float[](1.0);
+            const vec3 colors[] = vec3[](
+                vec3(1.0, 0.0, 0.7),
+                vec3(0.0, 1.0, 1.0),
+                vec3(1.0, 0.8, 0.0),
+                vec3(0.0, 0.0, 1.0),
+                vec3(1.0, 0.0, 0.0)
+            );
+
+            // Don't change the following line. The JavaScript code below will fill in this value
+            const int particleLimit = 0;
+
+            // Input/output variables
             uniform vec4 allStates[particleLimit];
             uniform vec4 userInput; // (x, y, clicking?, paused?), the latter two can be 1.0 or 0.0
             in vec4 oldState;
@@ -86,61 +106,75 @@
             out vec4 velocity; // internal attributes: (x-velocity, y-velocity, undefined, undefined)
             out lowp vec4 color;
 
-            float rand(vec2 co) {
-                // https://stackoverflow.com/a/28095165
-                return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+            // This function generates pseudorandom noise, see https://stackoverflow.com/a/28095165
+            float randomSeed = 0.0;
+            float rand() {
+                return fract(sin(dot(vec2(randomSeed++ + float(currentIndex)),
+                                     vec2(12.9898, 78.233))) * 43758.5453);
             }
 
             void main() {
                 state = oldState;
                 velocity = oldVelocity;
+                randomSeed = random;  // randomize the seed to make each run unique, if desired
+
+                float scale = 1.0;
 
                 gl_Position.xy = state.xy;
                 gl_Position.zw = vec2(0.0, 1.0);
-                gl_PointSize = state.z * 3.0 + 1.0;
+                gl_PointSize = 3.0;
 
-                float flavor = floor(state.w * numFlavors);
-                float weight = 1.0;
-                //weight *= (flavor == 0.0 ? 0.05 : 1.0);
-                //weight *= 30.0 * length(velocity.xy) / maxV + 1.0;
-
-                color.a = 1.0;
-                if      (flavor == 0.0) { color.rgb = vec3(1.0, 0.0, 0.7); }
-                else if (flavor == 1.0) { color.rgb = vec3(0.0, 1.0, 1.0); }
-                else                    { color.rgb = vec3(1.0, 1.0, 0.0); }
+                // Derived attributes
+                int flavor = int(floor(state.w * numFlavors));
+                float maxV = maxVs[flavor];
+                float weight = weights[flavor];
+                //weight *= 10000.0 * length(velocity.xy) / maxV + 1.0;
+                color = vec4(colors[flavor], 1.0);
 
                 // Has the user paused the simulation?
                 if (userInput.w == 1.0) { return; }
 
+                if (random < decayRate) {
+                    state.z = 0.0;
+                }
+
                 // Initialization, decay, and respawning of particles:
                 if (state.z < 0.001) {
-                    velocity.x = (rand(vec2(random + 0.0)) * 2.0 - 1.0) * maxV / 100000.0;
-                    velocity.y = (rand(vec2(random + 1.0)) * 2.0 - 1.0) * maxV / 100000.0;
-                    state.x = rand(vec2(random + 2.0)) * 2.0 - 1.0;
-                    state.y = rand(vec2(random + 3.0)) * 2.0 - 1.0;
-                    state.z = rand(vec2(random + 4.0)) * 0.5 + 0.5;
-                    state.w = rand(vec2(random + 5.0));
+                    velocity.xy = (vec2(rand(), rand()) * 2.0 - 1.0) * maxV / 100000.0;
+                    state.xy = vec2(rand(), rand()) * 2.0 - 1.0;
+                    state.z = 1.0;
+                    state.w = rand();
                 }
 
                 // Movement
-                state.xy += oldVelocity.xy;
+                state.xy += oldVelocity.xy * simulationSpeed;
 
                 // Gain/loss of energy
                 state.z += state.y * energyGain;
 
                 // Attraction of particles towards each other
                 if (particleGravity != 0.0) {
-                    vec4 particle_pos;
-                    vec4 center_of_mass;
-                    center_of_mass = vec4(0.0, 0.0, 0.0, 0.0);
+                    int otherFlavor;
+                    float otherWeight;
+                    vec2 dist;
+                    vec2 accel = vec2(0.0);
+                    vec4 otherState;
+                    float distLength;
                     for (int i = 0; i < particleLimit; i++) {
-                        particle_pos = allStates[i];
-                        center_of_mass += particle_pos;
+                        otherState = allStates[i];
+                        otherFlavor = int(floor(otherState.w * numFlavors));
+                        otherWeight = weights[otherFlavor];
+                        dist = (otherState.xy - state.xy) / scale;
+                        dist = (attractionRotationMatrix * dist);
+                        if (distLength < distanceCutoff) { continue; }
+                        dist /= 100000.0;
+                        distLength = length(dist);
+                        accel += dist
+                            * otherWeight
+                            / pow(distLength, particleGravityPower)
+                            * particleGravity
+                            / weight;
                     }
-                    center_of_mass /= float(particleLimit);
-                    vec2 dist = center_of_mass.xy - state.xy;
-                    dist = (attractionRotationMatrix * dist);
-                    vec2 accel = dist * particleGravity / weight;
                     if (length(accel) > maxAccel) {
                         accel *= vec2(maxAccel / length(accel));
                     }
@@ -149,35 +183,34 @@
 
                 // Attraction between particles based on flavor
                 if (flavorAttraction != 0.0) {
-                    float repulsion = 100.0 * pow(numFlavors - 1.0, 2.0);
-                    vec4 otherState;
-                    float otherFlavor;
+                    int otherFlavor;
+                    float distLength;
                     vec2 dist;
-                    float length_dist;
                     vec2 accel;
+                    vec4 otherState;
+                    float repulsion = 100.0 * pow(numFlavors - 1.0, 2.0);
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
                         otherState = allStates[i];
-                        otherFlavor = floor(otherState.w * numFlavors);
-                        dist = otherState.xy - state.xy;
-                        dist = (attractionRotationMatrix * dist);
-                        length_dist = length(dist);
-                        if (length_dist < 0.000001) {
+                        otherFlavor = int(floor(otherState.w * numFlavors));
+                        dist = attractionRotationMatrix * (otherState.xy - state.xy) / scale;
+                        distLength = length(dist);
+                        if (distLength < distanceCutoff) {
                             continue;
                         }
-                        if (length_dist < 0.10) {
+                        if (distLength < 0.10) {
                             accel += dist
-                                / length_dist
-                                * pow((length_dist * 10.0), 2.0)
+                                / distLength
+                                * pow((distLength * 10.0), 2.0)
                                 * flavorAttraction * 100000000.0
                                 * (flavor == otherFlavor ? repulsion : -1.0)
                                 / weight;
                         }
-                        if (length_dist < 0.04) {
+                        if (distLength < 0.04) {
                             state.xy = (85.0 * state.xy + 15.0 * otherState.xy) / 100.0;
                         }
                         accel += dist.xy
-                            / pow(length_dist, 4.0)
+                            / pow(distLength, 4.0)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0)
                             / weight;
@@ -192,15 +225,12 @@
                 if (userInput.b == 1.0) {
                     float dist = distance(state.xy, userInput.xy);
                     if (dist <= pointerRadius) {
-                        vec2 accel;
-                        dist /= pointerRadius;
+                        dist /= pointerRadius;  // normalize distance to 1.0
                         if (pointerSlowFactor != 0.0) {
-                            velocity.x *= 1.0 - pointerSlowFactor * (1.0 - dist);
-                            velocity.y *= 1.0 - pointerSlowFactor * (1.0 - dist);
+                            velocity.xy *= 1.0 - pointerSlowFactor * (1.0 - dist);
                         }
                         if (pointerPullFactor != 0.0) {
-                            accel = (userInput.xy - state.xy) * dist * pointerPullFactor;
-                            velocity.xy += accel;
+                            velocity.xy += pointerPullFactor * (userInput.xy - state.xy) * dist;
                         }
                     }
                 }
@@ -208,26 +238,16 @@
                 // Movement towards the bottom
                 velocity.y -= floorGravity;
 
-                // Limit position
-                if (state.x < -1.0) {
-                    state.x = -1.0;
-                    velocity.x *= -bounceDampeningFactor;
-                    velocity.p *= -bounceDampeningFactor;
-                }
-                else if (state.x > 1.0) {
-                    state.x = 1.0;
-                    velocity.x *= -bounceDampeningFactor;
-                    velocity.p *= -bounceDampeningFactor;
-                }
-                if (state.y < -1.0) {
-                    state.y = -1.0;
-                    velocity.y *= -bounceDampeningFactor;
-                    velocity.q *= -bounceDampeningFactor;
-                }
-                else if (state.y > 1.0) {
-                    state.y = 1.0;
-                    velocity.y *= -bounceDampeningFactor;
-                    velocity.q *= -bounceDampeningFactor;
+                // Keep particles inside the universe
+                for (int dimension = 0; dimension < 2; dimension++) {
+                    if (state[dimension] < -1.0) {
+                        state[dimension] = -1.0;
+                        velocity[dimension] *= -bounceDampeningFactor;
+                    }
+                    else if (state[dimension] > 1.0) {
+                        state[dimension] = 1.0;
+                        velocity[dimension] *= -bounceDampeningFactor;
+                    }
                 }
 
                 // Limit velocity
@@ -236,16 +256,8 @@
                 }
 
                 // Limit energy
-                if (state.z > 1.0) { state.z = 1.0; }
+                //if (state.z > 1.0) { state.z = 1.0; }
             }
-        </script>
-        <script type="x-shader/x-fragment" id="fragment-shader">
-            #version 300 es
-            precision lowp float;
-            in vec4 color;
-            out vec4 outColor;
-            // The color is computed by vertex shader to avoid duplicating variables/constants
-            void main() { outColor = color; }
         </script>
         <script type="application/javascript" id="boilerplate">
             "use strict";
@@ -269,11 +281,8 @@
                 param.pointerDown = false;
                 param.paused = false;
 
-                console.log('Max. uniforms/particles: ' +
-                    (gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS) - param.extraUniforms));
-
                 initUI(gl, param);
-                const shaderInfo = initShaders(gl);
+                const shaderInfo = initShaders(gl, param.particleLimit);
                 const buffers = initBuffers(gl, shaderInfo, param);
                 drawScene(gl, shaderInfo, buffers, param);
             }
@@ -313,9 +322,12 @@
                 });
             }
 
-            function initShaders(gl) {
+            function initShaders(gl, particleLimit) {
                 const vertexSource = document.getElementById("vertex-shader").text
-                const fragmentSource = document.getElementById("fragment-shader").text
+                    .replace(/(particleLimit = )\d+;/, '$1' + particleLimit + ';');
+                const fragmentSource = `#version 300 es
+                    precision lowp float; in vec4 color; out vec4 outColor;
+                    void main() { outColor = color; }`  // Just output what was put in
                 const feedbackVars = ['state', 'velocity'];
                 const shaderProgram = createProgram(gl, vertexSource, fragmentSource, feedbackVars);
 
