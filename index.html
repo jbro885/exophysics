@@ -61,16 +61,16 @@
 
             // Physical Constants
             const float floorGravity = 0.0;
-            const float particleGravity = 0.0;
+            const float particleGravity = 100000.0;
             const float flavorAttraction = -0.1;
-            const float numFlavors = 4.0;
+            const float numFlavors = 3.0;
             const float bounceDampeningFactor = 0.99;
             const float maxAccel = 0.01;
-            const float pointerRadius = 0.30;
+            const float pointerRadius = 0.40;
             const float pointerSlowFactor = 0.0;
-            const float pointerPullFactor = 0.2;
+            const float pointerPullFactor = 0.4;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
-            const float decayRate = 0.0001; // chance that a particle randomly breaks
+            const float decayRate = 0.0; // chance that a particle randomly breaks
 
             const float PI = 3.1415926535897932384626433832795;
             const float attractionAngle = 0.0 / 360.0 * PI;
@@ -84,7 +84,7 @@
             const vec3 colors[] = vec3[](
                 vec3(1.0, 0.0, 0.7),
                 vec3(0.0, 1.0, 1.0),
-                vec3(0.0, 0.0, 0.0),
+                vec3(1.0, 0.7, 0.0),
                 vec3(0.0, 0.0, 1.0),
                 vec3(1.0, 0.0, 0.0)
             );
@@ -153,17 +153,18 @@
                 // Attraction of particles towards each other
                 if (particleGravity != 0.0) {
                     vec2 dist;
-                    vec2 accel;
-                    vec2 centerOfMass = vec2(0.0);
+                    vec2 accel = vec2(0.0);
                     vec4 otherState;
+                    float distLength;
                     for (int i = 0; i < particleLimit; i++) {
                         otherState = allStates[i];
-                        centerOfMass += otherState.xy;
+                        dist = (otherState.xy - state.xy) / scale;
+                        dist = (attractionRotationMatrix * dist);
+                        dist /= 10.0;
+                        distLength = length(dist);
+                        if (distLength < 0.00000001) { continue; }
+                        accel += dist / pow(distLength, 3.0) * particleGravity / weight;
                     }
-                    centerOfMass /= float(particleLimit);
-                    dist = (centerOfMass - state.xy) / scale;
-                    dist = (attractionRotationMatrix * dist);
-                    accel = dist * particleGravity / weight;
                     if (length(accel) > maxAccel) {
                         accel *= vec2(maxAccel / length(accel));
                     }
@@ -184,14 +185,14 @@
                         otherFlavor = int(floor(otherState.w * numFlavors));
                         dist = attractionRotationMatrix * (otherState.xy - state.xy) / scale;
                         distLength = length(dist);
-                        if (distLength < 0.00000001) {
+                        if (distLength < 0.000000001) {
                             continue;
                         }
                         if (distLength < 0.10) {
                             accel += dist
                                 / distLength
                                 * pow((distLength * 10.0), 2.0)
-                                * flavorAttraction * 1000000.0
+                                * flavorAttraction * 10000000.0
                                 * (flavor == otherFlavor ? repulsion : -1.0)
                                 / weight;
                         }
