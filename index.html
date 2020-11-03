@@ -51,7 +51,7 @@
         <canvas id="canvas" style="display: block; height: 100vh; width: 100vw;"></canvas>
         <script>
             var parameters = {
-                particleLimit: 64,
+                particleLimit: 128,
                 extraUniforms: 1, // Besides "allStates", we use 1 more uniform: "userInput"
                 logFPS: true,
             }
@@ -61,7 +61,7 @@
 
             // Physical Constants
             const float floorGravity = 0.0;
-            const float particleGravity = 0.0000000001;
+            const float particleGravity = 0.00001;
             const float particleGravityPower = 3.0;
             const float flavorAttraction = -0.00001;
             const float flavorAttractionPower = 4.0;
@@ -74,7 +74,8 @@
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
             const float decayRate = 0.0; // chance that a particle randomly breaks
             const float distanceCutoff = 0.000000001;
-            const float simulationSpeed = 0.00001;
+            const float simulationSpeed = 0.000001;
+            const bool wrapBox = true;
 
             const float PI = 3.1415926535897932384626433832795;
             const float attractionAngle = 0.0 / 360.0 * PI;
@@ -116,6 +117,21 @@
 
             int getFlavor(vec4 state) {
                 return int(floor(state.w * numFlavors));
+            }
+
+            vec2 getDistance(vec2 me, vec2 other) {
+                if (wrapBox) {
+                    float dx = abs((other.x + 1.0) - (me.x + 1.0));
+                    float dy = abs((other.y + 1.0) - (me.y + 1.0));
+                    if (dx > 1.0)
+                        dx = 2.0 - dx;
+                    if (dy > 1.0)
+                        dy = 2.0 - dy;
+                    return vec2(dx, dy) - 0.5;
+                }
+                else {
+                    return other.xy - me.xy;
+                }
             }
 
             void main() {
@@ -170,8 +186,9 @@
                         otherState = allStates[i];
                         otherFlavor = getFlavor(otherState);
                         otherWeight = weights[otherFlavor];
-                        dist = (otherState.xy - state.xy) / scale;
-                        dist = (attractionRotationMatrix * dist);
+                        dist = getDistance(state.xy, otherState.xy);
+                        //dist = (otherState.xy - state.xy) / scale;
+                        dist = attractionRotationMatrix * dist / scale;
                         if (length(dist) < distanceCutoff) { continue; }
                         dist /= 100000.0;
                         accel += dist
@@ -190,7 +207,8 @@
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
                         vec4 otherState = allStates[i];
-                        vec2 dist = attractionRotationMatrix * (otherState.xy - state.xy) / scale;
+                        vec2 dist = getDistance(state.xy, otherState.xy);
+                        dist = attractionRotationMatrix * dist / scale;
                         if (length(dist) < distanceCutoff) { continue; }
                         int otherFlavor = getFlavor(otherState);
                         dist /= 300.0;
@@ -208,17 +226,27 @@
                 // Movement towards the bottom
                 velocity.y -= floorGravity;
 
-                // Keep particles inside the universe
-                for (int dimension = 0; dimension < 2; dimension++) {
-                    if (state[dimension] < -1.0) {
-                        state[dimension] = -1.0;
-                        velocity[dimension] *= -bounceDampeningFactor;
-                        velocity[1 - dimension] *= bounceDampeningFactor;
+                if (wrapBox) {
+                    for (int dimension = 0; dimension < 2; dimension++) {
+                        if (state[dimension] < -1.0)
+                            state[dimension] += 2.0;
+                        else if (state[dimension] > 1.0)
+                            state[dimension] -= 2.0;
                     }
-                    else if (state[dimension] > 1.0) {
-                        state[dimension] = 1.0;
-                        velocity[dimension] *= -bounceDampeningFactor;
-                        velocity[1 - dimension] *= bounceDampeningFactor;
+                }
+                else {
+                // Keep particles inside the universe
+                    for (int dimension = 0; dimension < 2; dimension++) {
+                        if (state[dimension] < -1.0) {
+                            state[dimension] = -1.0;
+                            velocity[dimension] *= -bounceDampeningFactor;
+                            velocity[1 - dimension] *= bounceDampeningFactor;
+                        }
+                        else if (state[dimension] > 1.0) {
+                            state[dimension] = 1.0;
+                            velocity[dimension] *= -bounceDampeningFactor;
+                            velocity[1 - dimension] *= bounceDampeningFactor;
+                        }
                     }
                 }
 
