@@ -51,7 +51,7 @@
         <canvas id="canvas" style="display: block; height: 100vh; width: 100vw;"></canvas>
         <script>
             var parameters = {
-                particleLimit: 128,
+                particleLimit: 1024,
                 extraUniforms: 1, // Besides "allStates", we use 1 more uniform: "userInput"
                 logFPS: true,
             }
@@ -61,10 +61,10 @@
 
             // Physical Constants
             const float floorGravity = 0.0;
-            const float particleGravity = 0.00001;
+            const float particleGravity = 0.000001;
             const float particleGravityPower = 3.0;
             const float flavorAttraction = -0.00001;
-            const float flavorAttractionPower = 4.0;
+            const float flavorAttractionPower = 3.8;
             const float numFlavors = 3.0;
             const float bounceDampeningFactor = 1.0;
             const float maxAccel = 999999.0;
@@ -74,7 +74,7 @@
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
             const float decayRate = 0.0; // chance that a particle randomly breaks
             const float distanceCutoff = 0.000000001;
-            const float simulationSpeed = 0.000001;
+            const float simulationSpeed = 0.0000001;
             const bool wrapBox = true;
 
             const float PI = 3.1415926535897932384626433832795;
@@ -84,7 +84,7 @@
                 -sin(attractionAngle), cos(attractionAngle));
 
             // Derived particle properties, based on flavor
-            const float maxVs[] = float[](0.05 / simulationSpeed);
+            const float maxVs[] = float[](0.025 / simulationSpeed);
             const float weights[] = float[](0.0001, 1.0);
             const vec3 colors[] = vec3[](
                 vec3(0.0, 1.0, 1.0),
@@ -143,7 +143,7 @@
 
                 gl_Position.xy = state.xy;
                 gl_Position.zw = vec2(0.0, 1.0);
-                gl_PointSize = 2.0;
+                gl_PointSize = 4.0;
 
                 float scale = 1.0;
 
