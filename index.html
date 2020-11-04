@@ -120,18 +120,20 @@
             }
 
             vec2 getDistance(vec2 me, vec2 other) {
-                if (wrapBox) {
-                    float dx = abs((other.x + 1.0) - (me.x + 1.0));
-                    float dy = abs((other.y + 1.0) - (me.y + 1.0));
-                    if (dx > 1.0)
-                        dx = 2.0 - dx;
-                    if (dy > 1.0)
-                        dy = 2.0 - dy;
-                    return vec2(dx, dy) - 0.5;
-                }
-                else {
+                if (!wrapBox) {
                     return other.xy - me.xy;
                 }
+
+                float dx, dy, min_dx = 9.9, min_dy = 9.9;
+                for (float stride = -2.0; stride < 2.1; stride += 2.0) {
+                    dx = other.x + stride - me.x;
+                    dy = other.y + stride - me.y;
+                    if (abs(dx) < abs(min_dx))
+                        min_dx = dx;
+                    if (abs(dy) < abs(min_dy))
+                        min_dy = dy;
+                }
+                return vec2(min_dx, min_dy);
             }
 
             void main() {
