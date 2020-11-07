@@ -155,9 +155,6 @@
 
                 float scale = 1.0;
 
-                // Has the user paused the simulation?
-                if (userInput.w == 1.0) { return; }
-
                 if (random < decayRate) {
                     state.z = 0.0;
                 }
@@ -180,6 +177,9 @@
                 float maxV = maxVs[flavor];
                 float weight = weights[flavor];
                 color.rgb = colors[flavor];
+
+                // Has the user paused the simulation?
+                if (userInput.w == 1.0) { return; }
 
                 // Movement
                 state.xy += oldVelocity.xy * simulationSpeed;
