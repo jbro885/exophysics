@@ -240,23 +240,19 @@
                     vec2 dist = getDistance(state.xy, otherState.xy);
                     dist = attractionRotationMatrix * dist / scale;
                     if (length(dist) <= eatingDistance) {
-                        if (flavor == 0 && otherFlavor == 1) {
+                        if (flavor == 0 && otherFlavor == 1)
                             state.z += 0.03;
-                        }
-                        else if (flavor == 1 && otherFlavor == 0) {
+                        else if (flavor == 1 && otherFlavor == 0)
                             state.z -= 0.3;
-                        }
                     }
                     if (length(dist) < 0.07)
                         neighbors++;
                 }
                 if (flavor == 1) {
-                    if (neighbors > 6 || neighbors < 4) {
+                    if (neighbors > 6 || neighbors < 4)
                         state.z -= 0.05;
-                    }
-                    else {
+                    else
                         state.z += 0.05;
-                    }
                 }
                 else {
                     state.z -= 0.01;
