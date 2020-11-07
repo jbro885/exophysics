@@ -51,7 +51,7 @@
         <canvas id="canvas" style="display: block; height: 100vh; width: 100vw;"></canvas>
         <script>
             var parameters = {
-                particleLimit: 1024,
+                particleLimit: 256,
                 extraUniforms: 1, // Besides "allStates", we use 1 more uniform: "userInput"
                 logFPS: true,
             }
@@ -60,13 +60,14 @@
             #version 300 es
 
             // Physical Constants
-            const float gravity = 0.000001;
-            const float gravityPower = 3.0;
+            const float gravity = 0.001;
+            const float gravityPower = 2.0;
             const float gravityScale = 100000.0; // scales the distance between particles
-            const float flavorAttraction = -0.00001;
-            const float flavorAttractionPower = 3.8;
+            const float flavorAttraction = -0.0001;
+            const float flavorAttractionPower = 3.0;
             const float flavorAttractionScale = 300.0; // scales the distance between particles
-            const float numFlavors = 3.0;
+            const float eatingDistance = 0.02;
+            const float numFlavors = 2.0;
             const float bounceDampeningFactor = 1.0;
             const float maxAccel = 999999.0;
             const float pointerRadius = 0.40;
@@ -75,7 +76,7 @@
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
             const float decayRate = 0.0; // chance that a particle randomly breaks
             const float distanceCutoff = 0.0000000001;
-            const float simulationSpeed = 1.0;
+            const float simulationSpeed = 0.0000000001;
             const bool cyclicalGeometry = true; // Wrap around x- and y-coordinates on the edges?
 
             const float PI = 3.1415926535897932384626433832795;
@@ -84,12 +85,15 @@
                 cos(attractionAngle / 360.0 * PI), sin(attractionAngle / 360.0 * PI),
                 -sin(attractionAngle / 360.0 * PI), cos(attractionAngle / 360.0 * PI));
 
+            const float DEAD = -999.0;
+
             // Derived particle properties, based on flavor
             const float maxVs[] = float[](0.025 / simulationSpeed);
             const float weights[] = float[](0.0001, 1.0);
             const vec3 colors[] = vec3[](
-                vec3(0.0, 1.0, 1.0),
                 vec3(1.0, 0.0, 0.7),
+                vec3(0.0, 1.0, 0.0),
+                vec3(0.0, 1.0, 1.0),
                 vec3(1.0, 0.8, 0.0),
                 vec3(0.0, 0.0, 1.0),
                 vec3(1.0, 0.0, 0.0)
@@ -140,9 +144,14 @@
                 velocity = oldVelocity;
                 randomSeed = random;  // randomize the seed to make each run unique, if desired
 
+                float visibleThreshold = 0.3;
+
                 gl_Position.xy = state.xy;
                 gl_Position.zw = vec2(0.0, 1.0);
-                gl_PointSize = 2.0 + state.z * 2.0;
+                gl_PointSize = 1.0 + state.z * 4.0;
+                if (state.z < visibleThreshold) {
+                    gl_PointSize = 0.0;
+                }
 
                 float scale = 1.0;
 
@@ -150,15 +159,12 @@
                 int flavor = getFlavor(state);
                 float maxV = maxVs[flavor];
                 float weight = weights[flavor];
-                //weight *= 10000.0 * length(velocity.xy) / maxV + 1.0;
                 color.rgb = colors[flavor];
-                //color = vec4(abs(sin(state.z * PI / 2.0)) * 0.5 + 0.0,
-                //             abs(sin(state.z * PI / 2.0)) * 0.7 + 0.3,
-                //             abs(cos(state.z * PI / 2.0)) * 0.6 + 0.4,
-                //             1.0);
 
                 // Has the user paused the simulation?
                 if (userInput.w == 1.0) { return; }
+
+                if (state.z == DEAD) return;
 
                 if (random < decayRate) {
                     state.z = 0.0;
@@ -168,15 +174,18 @@
                 if (state.z < 0.001) {
                     velocity.xy = (vec2(rand(), rand()) * 2.0 - 1.0) * maxV / 10000.0;
                     state.xy = vec2(rand(), rand()) * 2.0 - 1.0;
-                    state.z = rand() * 0.4;
-                    state.w = rand();
+                    if (currentIndex < 10) {
+                        state.w = 0.0;
+                        state.z = 1.0;
+                    } else {
+                        state.w = 0.99;
+                        state.z = rand() * 0.1;
+                    }
+                    flavor = getFlavor(state);
                 }
 
                 // Movement
                 state.xy += oldVelocity.xy * simulationSpeed;
-
-                // Gain/loss of energy
-                state.z += state.y * energyGain;
 
                 // Attraction of particles towards each other
                 if (gravity != 0.0) {
@@ -184,6 +193,7 @@
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
                         vec4 otherState = allStates[i];
+                        if (otherState.z < visibleThreshold) { continue; }
                         int otherFlavor = getFlavor(otherState);
                         float otherWeight = weights[otherFlavor];
                         vec2 dist = getDistance(state.xy, otherState.xy);
@@ -205,6 +215,7 @@
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
                         vec4 otherState = allStates[i];
+                        if (otherState.z < visibleThreshold) { continue; }
                         vec2 dist = getDistance(state.xy, otherState.xy);
                         dist = attractionRotationMatrix * dist / scale / flavorAttractionScale;
                         if (length(dist) < distanceCutoff) { continue; }
@@ -225,16 +236,32 @@
                 for (int i = 0; i < particleLimit; i++) {
                     if (i == currentIndex) { continue; }
                     vec4 otherState = allStates[i];
+                    int otherFlavor = getFlavor(otherState);
                     vec2 dist = getDistance(state.xy, otherState.xy);
                     dist = attractionRotationMatrix * dist / scale;
-                    if (length(dist) < 0.10)
+                    if (length(dist) <= eatingDistance) {
+                        if (flavor == 0 && otherFlavor == 1) {
+                            state.z += 0.02;
+                        }
+                        else if (flavor == 1 && otherFlavor == 0) {
+                            state.z -= 0.3;
+                        }
+                    }
+                    if (length(dist) < 0.07)
                         neighbors++;
                 }
-                if (neighbors > 50 || neighbors < 2) {
-                    state.z -= 0.01;
+                if (flavor == 1) {
+                    if (neighbors > 6 || neighbors < 4) {
+                        state.z -= 0.05;
+                    }
+                    else {
+                        state.z += 0.05;
+                    }
                 }
                 else {
-                    state.z += 0.05;
+                    state.z -= 0.01;
+                    if (state.z < visibleThreshold)
+                        state.z = DEAD;
                 }
 
                 // Keep particles inside the universe
