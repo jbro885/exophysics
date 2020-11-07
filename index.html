@@ -60,8 +60,8 @@
             #version 300 es
 
             // Physical Constants
-            const float particleGravity = 0.000001;
-            const float particleGravityPower = 3.0;
+            const float gravity = 0.000001;
+            const float gravityPower = 3.0;
             const float flavorAttraction = -0.00001;
             const float flavorAttractionPower = 3.8;
             const float numFlavors = 3.0;
@@ -174,7 +174,7 @@
                 state.z += state.y * energyGain;
 
                 // Attraction of particles towards each other
-                if (particleGravity != 0.0) {
+                if (gravity != 0.0) {
                     int otherFlavor;
                     float otherWeight;
                     vec2 dist;
@@ -191,8 +191,8 @@
                         dist /= 100000.0;
                         accel += dist
                             * otherWeight
-                            / pow(length(dist), particleGravityPower)
-                            * particleGravity;
+                            / pow(length(dist), gravityPower)
+                            * gravity;
                     }
                     if (length(accel) > maxAccel) {
                         accel *= vec2(maxAccel / length(accel));
