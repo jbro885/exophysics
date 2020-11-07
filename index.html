@@ -67,7 +67,7 @@
             const float flavorAttractionPower = 3.0;
             const float flavorAttractionScale = 300.0; // scales the distance between particles
             const float eatingDistance = 0.02;
-            const float numFlavors = 2.0;
+            const float numFlavors = 3.0;
             const float bounceDampeningFactor = 1.0;
             const float maxAccel = 999999.0;
             const float pointerRadius = 0.40;
@@ -85,12 +85,18 @@
                 cos(attractionAngle / 360.0 * PI), sin(attractionAngle / 360.0 * PI),
                 -sin(attractionAngle / 360.0 * PI), cos(attractionAngle / 360.0 * PI));
 
-            const float DEAD = -999.0;
+            // Game-related constants
+            const float INITIAL = 0.0;
+            const float UNDECIDED = 1.0;
+            const float PREDATOR = 2.0;
+            const float FOOD = 3.0;
 
             // Derived particle properties, based on flavor
             const float maxVs[] = float[](0.025 / simulationSpeed);
-            const float weights[] = float[](0.0001, 1.0);
+            const float weights[] = float[](1.0, 1.0, 0.0001, 1.0);
             const vec3 colors[] = vec3[](
+                vec3(0.0, 0.0, 0.0),
+                vec3(0.0, 0.0, 0.0),
                 vec3(1.0, 0.0, 0.7),
                 vec3(0.0, 1.0, 0.0),
                 vec3(0.0, 1.0, 1.0),
@@ -121,7 +127,7 @@
             }
 
             int getFlavor(vec4 state) {
-                return int(floor(state.w * numFlavors));
+                return int(state.w);
             }
 
             vec2 getDistance(vec2 me, vec2 other) {
@@ -144,28 +150,14 @@
                 velocity = oldVelocity;
                 randomSeed = random;  // randomize the seed to make each run unique, if desired
 
-                float visibleThreshold = 0.3;
-
                 gl_Position.xy = state.xy;
                 gl_Position.zw = vec2(0.0, 1.0);
-                gl_PointSize = 1.0 + state.z * 4.0;
+                gl_PointSize = 1.0 + state.z * 6.0;
 
                 float scale = 1.0;
 
-                // Derived attributes
-                int flavor = getFlavor(state);
-                float maxV = maxVs[flavor];
-                float weight = weights[flavor];
-                color.rgb = colors[flavor];
-
                 // Has the user paused the simulation?
                 if (userInput.w == 1.0) { return; }
-
-                if (state.z == DEAD) return;
-                if (state.z < visibleThreshold) {
-                    gl_PointSize = 0.0;
-                    color.rgb = vec3(0.0, 0.0, 0.0);
-                }
 
                 if (random < decayRate) {
                     state.z = 0.0;
@@ -173,17 +165,22 @@
 
                 // Initialization, decay, and respawning of particles:
                 if (state.z < 0.001) {
-                    velocity.xy = (vec2(rand(), rand()) * 2.0 - 1.0) * maxV / 10000.0;
+                    velocity.xy = (vec2(rand(), rand()) * 2.0 - 1.0) * maxVs[0] / 10000.0;
                     state.xy = vec2(rand(), rand()) * 2.0 - 1.0;
-                    if (currentIndex < particleLimit / 10) {
-                        state.w = 0.0;
-                        state.z = 1.0;
+                    if (state.w == INITIAL && rand() < 0.05) {
+                        state.w = PREDATOR;
+                        state.z = 0.8;
                     } else {
-                        state.w = 0.99;
+                        state.w = UNDECIDED;
                         state.z = rand() * 0.1;
                     }
-                    flavor = getFlavor(state);
                 }
+
+                // Derived attributes
+                int flavor = getFlavor(state);
+                float maxV = maxVs[flavor];
+                float weight = weights[flavor];
+                color.rgb = colors[flavor];
 
                 // Movement
                 state.xy += oldVelocity.xy * simulationSpeed;
@@ -194,7 +191,7 @@
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
                         vec4 otherState = allStates[i];
-                        if (otherState.z < visibleThreshold) { continue; }
+                        if (otherState.w == UNDECIDED) { continue; }
                         int otherFlavor = getFlavor(otherState);
                         float otherWeight = weights[otherFlavor];
                         vec2 dist = getDistance(state.xy, otherState.xy);
@@ -216,7 +213,7 @@
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
                         vec4 otherState = allStates[i];
-                        if (otherState.z < visibleThreshold) { continue; }
+                        if (otherState.w == UNDECIDED) { continue; }
                         vec2 dist = getDistance(state.xy, otherState.xy);
                         dist = attractionRotationMatrix * dist / scale / flavorAttractionScale;
                         if (length(dist) < distanceCutoff) { continue; }
@@ -233,32 +230,49 @@
                 }
 
                 // Eating/multiplying mechanics
-                int neighbors = 0;
+                int neighborsFood = 0;
+                int neighborsUndecided = 0;
+                int neighborsPredator = 0;
+                float neighborsPredatorEnergy = 0.0;
                 for (int i = 0; i < particleLimit; i++) {
                     if (i == currentIndex) { continue; }
                     vec4 otherState = allStates[i];
-                    int otherFlavor = getFlavor(otherState);
-                    vec2 dist = getDistance(state.xy, otherState.xy);
-                    dist = attractionRotationMatrix * dist / scale;
+                    vec2 dist = getDistance(state.xy, otherState.xy) / scale;
                     if (length(dist) <= eatingDistance) {
-                        if (flavor == 0 && otherFlavor == 1)
+                        if (state.w == PREDATOR && otherState.w == FOOD)
                             state.z += 0.03;
-                        else if (flavor == 1 && otherFlavor == 0)
+                        else if (state.w == FOOD && otherState.w == PREDATOR)
                             state.z -= 0.3;
                     }
-                    if (length(dist) < 0.07)
-                        neighbors++;
+                    if (length(dist) < 0.07) {
+                        if (otherState.w == FOOD)
+                            neighborsFood++;
+                        else if (otherState.w == UNDECIDED)
+                            neighborsUndecided++;
+                        else if (otherState.w == PREDATOR) {
+                            neighborsPredator++;
+                            neighborsPredatorEnergy += otherState.z;
+                        }
+                    }
                 }
-                if (flavor == 1) {
-                    if (neighbors > 6 || neighbors < 4)
+                if (state.w == UNDECIDED || state.w == FOOD) {
+                    int neighbors = neighborsFood + neighborsUndecided;
+                    if (neighbors > 6 || neighbors < 3)
                         state.z -= 0.05;
-                    else
+                    else {
                         state.z += 0.05;
+                        state.w = FOOD;
+                    }
                 }
-                else {
+                if (state.w == UNDECIDED) {
+                    if (neighborsPredator == 1 && neighborsUndecided == 0 && rand() < 0.04
+                        && neighborsPredatorEnergy > 0.95 && state.w == UNDECIDED) {
+                        state.w = PREDATOR;
+                        state.z = 0.05;
+                    }
+                }
+                if (state.w == PREDATOR) {
                     state.z -= 0.01;
-                    if (state.z < visibleThreshold)
-                        state.z = DEAD;
                 }
 
                 // Keep particles inside the universe
