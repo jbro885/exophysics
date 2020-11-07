@@ -62,8 +62,10 @@
             // Physical Constants
             const float gravity = 0.000001;
             const float gravityPower = 3.0;
+            const float gravityScale = 100000.0; // scales the distance between particles
             const float flavorAttraction = -0.00001;
             const float flavorAttractionPower = 3.8;
+            const float flavorAttractionScale = 300.0; // scales the distance between particles
             const float numFlavors = 3.0;
             const float bounceDampeningFactor = 1.0;
             const float maxAccel = 999999.0;
@@ -182,8 +184,7 @@
                         int otherFlavor = getFlavor(otherState);
                         float otherWeight = weights[otherFlavor];
                         vec2 dist = getDistance(state.xy, otherState.xy);
-                        dist = attractionRotationMatrix * dist / scale;
-                        dist /= 100000.0;
+                        dist = attractionRotationMatrix * dist / scale / gravityScale;
                         if (length(dist) < distanceCutoff) { continue; }
                         accel += dist
                             * otherWeight
@@ -202,8 +203,7 @@
                         if (i == currentIndex) { continue; }
                         vec4 otherState = allStates[i];
                         vec2 dist = getDistance(state.xy, otherState.xy);
-                        dist = attractionRotationMatrix * dist / scale;
-                        dist /= 300.0;
+                        dist = attractionRotationMatrix * dist / scale / flavorAttractionScale;
                         if (length(dist) < distanceCutoff) { continue; }
                         int otherFlavor = getFlavor(otherState);
                         vec2 accel = dist /
