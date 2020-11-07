@@ -175,7 +175,7 @@
                 if (state.z < 0.001) {
                     velocity.xy = (vec2(rand(), rand()) * 2.0 - 1.0) * maxV / 10000.0;
                     state.xy = vec2(rand(), rand()) * 2.0 - 1.0;
-                    if (currentIndex < 15) {
+                    if (currentIndex < particleLimit / 10) {
                         state.w = 0.0;
                         state.z = 1.0;
                     } else {
