@@ -60,10 +60,10 @@
             #version 300 es
 
             // Physical Constants
-            const float gravity = 0.001;
+            const float gravity = -0.001;
             const float gravityPower = 2.0;
             const float gravityScale = 100000.0; // scales the distance between particles
-            const float flavorAttraction = -0.0001;
+            const float flavorAttraction = -0.001;
             const float flavorAttractionPower = 3.0;
             const float flavorAttractionScale = 300.0; // scales the distance between particles
             const float eatingDistance = 0.02;
@@ -241,7 +241,7 @@
                     dist = attractionRotationMatrix * dist / scale;
                     if (length(dist) <= eatingDistance) {
                         if (flavor == 0 && otherFlavor == 1) {
-                            state.z += 0.02;
+                            state.z += 0.03;
                         }
                         else if (flavor == 1 && otherFlavor == 0) {
                             state.z -= 0.3;
