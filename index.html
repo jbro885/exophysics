@@ -175,17 +175,13 @@
 
                 // Attraction of particles towards each other
                 if (gravity != 0.0) {
-                    int otherFlavor;
-                    float otherWeight;
-                    vec2 dist;
                     vec2 accel = vec2(0.0);
-                    vec4 otherState;
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
-                        otherState = allStates[i];
-                        otherFlavor = getFlavor(otherState);
-                        otherWeight = weights[otherFlavor];
-                        dist = getDistance(state.xy, otherState.xy);
+                        vec4 otherState = allStates[i];
+                        int otherFlavor = getFlavor(otherState);
+                        float otherWeight = weights[otherFlavor];
+                        vec2 dist = getDistance(state.xy, otherState.xy);
                         dist = attractionRotationMatrix * dist / scale;
                         dist /= 100000.0;
                         if (length(dist) < distanceCutoff) { continue; }
