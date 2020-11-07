@@ -149,9 +149,6 @@
                 gl_Position.xy = state.xy;
                 gl_Position.zw = vec2(0.0, 1.0);
                 gl_PointSize = 1.0 + state.z * 4.0;
-                if (state.z < visibleThreshold) {
-                    gl_PointSize = 0.0;
-                }
 
                 float scale = 1.0;
 
@@ -165,6 +162,10 @@
                 if (userInput.w == 1.0) { return; }
 
                 if (state.z == DEAD) return;
+                if (state.z < visibleThreshold) {
+                    gl_PointSize = 0.0;
+                    color.rgb = vec3(0.0, 0.0, 0.0);
+                }
 
                 if (random < decayRate) {
                     state.z = 0.0;
