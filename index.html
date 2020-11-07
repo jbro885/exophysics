@@ -72,7 +72,7 @@
             const float pointerPullFactor = 0.4;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
             const float decayRate = 0.0; // chance that a particle randomly breaks
-            const float distanceCutoff = 0.000000001;
+            const float distanceCutoff = 0.000000000001;
             const float simulationSpeed = 0.0000001;
             const bool cyclicalGeometry = true; // Wrap around x- and y-coordinates on the edges?
 
@@ -187,8 +187,8 @@
                         otherWeight = weights[otherFlavor];
                         dist = getDistance(state.xy, otherState.xy);
                         dist = attractionRotationMatrix * dist / scale;
-                        if (length(dist) < distanceCutoff) { continue; }
                         dist /= 100000.0;
+                        if (length(dist) < distanceCutoff) { continue; }
                         accel += dist
                             * otherWeight
                             / pow(length(dist), gravityPower)
@@ -207,9 +207,9 @@
                         vec4 otherState = allStates[i];
                         vec2 dist = getDistance(state.xy, otherState.xy);
                         dist = attractionRotationMatrix * dist / scale;
+                        dist /= 300.0;
                         if (length(dist) < distanceCutoff) { continue; }
                         int otherFlavor = getFlavor(otherState);
-                        dist /= 300.0;
                         vec2 accel = dist /
                             pow(length(dist), flavorAttractionPower)
                             * flavorAttraction;
