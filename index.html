@@ -187,7 +187,6 @@
                         otherFlavor = getFlavor(otherState);
                         otherWeight = weights[otherFlavor];
                         dist = getDistance(state.xy, otherState.xy);
-                        //dist = (otherState.xy - state.xy) / scale;
                         dist = attractionRotationMatrix * dist / scale;
                         if (length(dist) < distanceCutoff) { continue; }
                         dist /= 100000.0;
