@@ -150,8 +150,7 @@
                 velocity = oldVelocity;
                 randomSeed = random;  // randomize the seed to make each run unique, if desired
 
-                gl_Position.xy = state.xy;
-                gl_Position.zw = vec2(0.0, 1.0);
+                gl_Position = vec4(state.xy, 0.0, 1.0);
                 gl_PointSize = 1.0 + state.z * 6.0;
 
                 float scale = 1.0;
