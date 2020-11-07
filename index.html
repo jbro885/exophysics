@@ -63,9 +63,9 @@
             const float gravity = 0.000001;
             const float gravityPower = 3.0;
             const float gravityScale = 100000.0; // scales the distance between particles
-            const float flavorAttraction = -0.1;
-            const float flavorAttractionPower = 2.8;
-            const float flavorAttractionScale = 0.000000001; // scales the distance between particles
+            const float flavorAttraction = -0.00001;
+            const float flavorAttractionPower = 3.8;
+            const float flavorAttractionScale = 100.0; // scales the distance between particles
             const float numFlavors = 3.0;
             const float bounceDampeningFactor = 1.0;
             const float maxAccel = 999999.0;
@@ -85,7 +85,7 @@
                 -sin(attractionAngle / 360.0 * PI), cos(attractionAngle / 360.0 * PI));
 
             // Derived particle properties, based on flavor
-            const float maxVs[] = float[](0.05 / simulationSpeed);
+            const float maxVs[] = float[](0.025 / simulationSpeed);
             const float weights[] = float[](0.0001, 1.0);
             const vec3 colors[] = vec3[](
                 vec3(0.0, 1.0, 1.0),
