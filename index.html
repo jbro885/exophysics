@@ -78,10 +78,10 @@
             const bool wrapBox = true;
 
             const float PI = 3.1415926535897932384626433832795;
-            const float attractionAngle = 0.0 / 360.0 * PI;
+            const float attractionAngle = 0.0; // Rotate the attraction vector. In degrees.
             const mat2 attractionRotationMatrix = mat2(
-                cos(attractionAngle), sin(attractionAngle),
-                -sin(attractionAngle), cos(attractionAngle));
+                cos(attractionAngle / 360.0 * PI), sin(attractionAngle / 360.0 * PI),
+                -sin(attractionAngle / 360.0 * PI), cos(attractionAngle / 360.0 * PI));
 
             // Derived particle properties, based on flavor
             const float maxVs[] = float[](0.025 / simulationSpeed);
