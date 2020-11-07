@@ -60,7 +60,6 @@
             #version 300 es
 
             // Physical Constants
-            const float floorGravity = 0.0;
             const float particleGravity = 0.000001;
             const float particleGravityPower = 3.0;
             const float flavorAttraction = -0.00001;
@@ -221,9 +220,6 @@
                         velocity.xy += accel / weight;
                     }
                 }
-
-                // Movement towards the bottom
-                velocity.y -= floorGravity;
 
                 // Keep particles inside the universe
                 if (cyclicalGeometry) {
