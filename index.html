@@ -349,24 +349,21 @@
             }
 
             function initUI(gl, param) {
-                gl.canvas.addEventListener('pointermove', function(e) {
+                function updatePointer(e) {
                     const rect = canvas.getBoundingClientRect();
                     param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
                     param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
-                });
+                }
+                gl.canvas.addEventListener('pointermove', updatePointer);
                 gl.canvas.addEventListener('pointerdown', function(e) {
-                    const rect = canvas.getBoundingClientRect();
-                    param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
-                    param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
+                    updatePointer(e);
                     if (e.button === 0) {
                         param.pointerDown = true;
                         gl.canvas.setPointerCapture(e.pointerId);
                     }
                 });
                 gl.canvas.addEventListener('pointerup', function(e) {
-                    const rect = canvas.getBoundingClientRect();
-                    param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
-                    param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
+                    updatePointer(e);
                     if (e.button === 0) {
                         param.pointerDown = false;
                         gl.canvas.releasePointerCapture(e.pointerId);
