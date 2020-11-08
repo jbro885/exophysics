@@ -330,10 +330,8 @@
             function main(param) {
                 const canvas = document.querySelector('#canvas');
                 const gl = canvas.getContext('webgl2');
-                if (!gl) {
-                    alert('Unable to initialize WebGL. Your browser or machine may not support it.');
-                    return;
-                }
+                if (!gl)
+                    return alert('Unable to initialize WebGL. Your browser/machine may not support it.');
 
                 param.particleLimit = Math.min(param.particleLimit,
                     gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS) - param.extraUniforms);
@@ -375,9 +373,8 @@
                     }
                 });
                 window.addEventListener('keypress', function(e) {
-                    if (e.key === " ") {
+                    if (e.key === " ")
                         param.paused ^= true;
-                    }
                     else if (e.key === ".") {
                         param.paused = false;
                         param.pauseOnNextFrame = true;
@@ -580,9 +577,8 @@
                             param.fpsCounter++;
                         }
                         drawScene(gl, shaderInfo, buffers, param);
-                    } else {
+                    } else
                         window.requestAnimationFrame(readShaderOutput);
-                    }
                 }
                 window.requestAnimationFrame(readShaderOutput);
             }
