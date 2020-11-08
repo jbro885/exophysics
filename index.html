@@ -350,7 +350,7 @@
 
             function initUI(gl, param) {
                 function updatePointer(e) {
-                    const rect = canvas.getBoundingClientRect();
+                    const rect = gl.canvas.getBoundingClientRect();
                     param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
                     param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
                 }
@@ -491,9 +491,9 @@
                 // this function will call itself in a loop forever.
                 gl.clearColor(0.0, 0.0, 0.0, 1.0);
                 gl.clear(gl.COLOR_BUFFER_BIT);
-                if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
-                    canvas.width = canvas.clientWidth;
-                    canvas.height = canvas.clientHeight;
+                if (gl.canvas.width !== gl.canvas.clientWidth || gl.canvas.height !== gl.canvas.clientHeight) {
+                    gl.canvas.width = gl.canvas.clientWidth;
+                    gl.canvas.height = gl.canvas.clientHeight;
                     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
                 }
 
