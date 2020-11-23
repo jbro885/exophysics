@@ -60,10 +60,12 @@
             #version 300 es
 
             // Physical Constants
-            const float floorGravity = 0.0;
-            const float particleGravity = 0.0;
-            const float particleGravityPower = 3.0;
+            const float gravity = 0.0;
+            const float gravityPower = 3.0;
+            const float gravityScale = 100000.0; // scales the distance between particles
             const float flavorAttraction = -0.05;
+            const float flavorAttractionPower = 4.0;
+            const float flavorAttractionScale = 1.0; // scales the distance between particles
             const float numFlavors = 3.0;
             const float bounceDampeningFactor = 0.99;
             const float maxAccel = 0.01;
@@ -74,12 +76,13 @@
             const float decayRate = 0.0; // chance that a particle randomly breaks
             const float distanceCutoff = 0.000001;
             const float simulationSpeed = 1.0;
+            const bool cyclicalGeometry = false; // Wrap around x- and y-coordinates on the edges?
 
             const float PI = 3.1415926535897932384626433832795;
-            const float attractionAngle = 0.0 / 360.0 * PI;
+            const float attractionAngle = 0.0; // Rotate the attraction vector. In degrees.
             const mat2 attractionRotationMatrix = mat2(
-                cos(attractionAngle), sin(attractionAngle),
-                -sin(attractionAngle), cos(attractionAngle));
+                cos(attractionAngle / 360.0 * PI), sin(attractionAngle / 360.0 * PI),
+                -sin(attractionAngle / 360.0 * PI), cos(attractionAngle / 360.0 * PI));
 
             // Derived particle properties, based on flavor
             const float maxVs[] = float[](0.01 / simulationSpeed);
@@ -113,26 +116,33 @@
                                      vec2(12.9898, 78.233))) * 43758.5453);
             }
 
+            int getFlavor(vec4 state) {
+                return int(floor(state.w * numFlavors));
+            }
+
+            vec2 getDistance(vec2 me, vec2 other) {
+                vec2 dif = other.xy - me.xy;
+                if (cyclicalGeometry) {
+                    if (dif.x > 1.0)
+                        dif.x -= 2.0;
+                    else if (dif.x < -1.0)
+                        dif.x += 2.0;
+                    if (dif.y > 1.0)
+                        dif.y -= 2.0;
+                    else if (dif.y < -1.0)
+                        dif.y += 2.0;
+                }
+                return dif;
+            }
+
             void main() {
                 state = oldState;
                 velocity = oldVelocity;
                 randomSeed = random;  // randomize the seed to make each run unique, if desired
 
-                float scale = 1.0;
-
-                gl_Position.xy = state.xy;
-                gl_Position.zw = vec2(0.0, 1.0);
+                gl_Position = vec4(state.xy, 0.0, 1.0);
                 gl_PointSize = 3.0;
-
-                // Derived attributes
-                int flavor = int(floor(state.w * numFlavors));
-                float maxV = maxVs[flavor];
-                float weight = weights[flavor];
-                //weight *= 10000.0 * length(velocity.xy) / maxV + 1.0;
-                color = vec4(colors[flavor], 1.0);
-
-                // Has the user paused the simulation?
-                if (userInput.w == 1.0) { return; }
+                float scale = 1.0;
 
                 if (random < decayRate) {
                     state.z = 0.0;
@@ -140,11 +150,21 @@
 
                 // Initialization, decay, and respawning of particles:
                 if (state.z < 0.001) {
-                    velocity.xy = (vec2(rand(), rand()) * 2.0 - 1.0) * maxV / 100000.0;
+                    velocity.xy = (vec2(rand(), rand()) * 2.0 - 1.0) * maxVs[0] / 100000.0;
                     state.xy = vec2(rand(), rand()) * 2.0 - 1.0;
                     state.z = 1.0;
                     state.w = rand();
                 }
+
+                // Derived attributes
+                int flavor = getFlavor(state);
+                float maxV = maxVs[flavor];
+                float weight = weights[flavor];
+                //weight *= 10000.0 * length(velocity.xy) / maxV + 1.0;
+                color.rgb = colors[flavor];
+
+                // Has the user paused the simulation?
+                if (userInput.w == 1.0) { return; }
 
                 // Movement
                 state.xy += oldVelocity.xy * simulationSpeed;
@@ -153,26 +173,20 @@
                 state.z += state.y * energyGain;
 
                 // Attraction of particles towards each other
-                if (particleGravity != 0.0) {
-                    int otherFlavor;
-                    float otherWeight;
-                    vec2 dist;
+                if (gravity != 0.0) {
                     vec2 accel = vec2(0.0);
-                    vec4 otherState;
-                    float distLength;
                     for (int i = 0; i < particleLimit; i++) {
-                        otherState = allStates[i];
-                        otherFlavor = int(floor(otherState.w * numFlavors));
-                        otherWeight = weights[otherFlavor];
-                        dist = (otherState.xy - state.xy) / scale;
-                        dist = (attractionRotationMatrix * dist);
-                        if (distLength < distanceCutoff) { continue; }
-                        dist /= 100000.0;
-                        distLength = length(dist);
+                        if (i == currentIndex) { continue; }
+                        vec4 otherState = allStates[i];
+                        int otherFlavor = getFlavor(otherState);
+                        float otherWeight = weights[otherFlavor];
+                        vec2 dist = getDistance(state.xy, otherState.xy);
+                        dist = attractionRotationMatrix * dist / scale / gravityScale;
+                        if (length(dist) < distanceCutoff) { continue; }
                         accel += dist
                             * otherWeight
-                            / pow(distLength, particleGravityPower)
-                            * particleGravity
+                            / pow(length(dist), gravityPower)
+                            * gravity
                             / weight;
                     }
                     if (length(accel) > maxAccel) {
@@ -183,21 +197,16 @@
 
                 // Attraction between particles based on flavor
                 if (flavorAttraction != 0.0) {
-                    int otherFlavor;
-                    float distLength;
-                    vec2 dist;
-                    vec2 accel;
-                    vec4 otherState;
                     float repulsion = 100.0 * pow(numFlavors - 1.0, 2.0);
+                    vec2 accel = vec2(0.0);
                     for (int i = 0; i < particleLimit; i++) {
                         if (i == currentIndex) { continue; }
-                        otherState = allStates[i];
-                        otherFlavor = int(floor(otherState.w * numFlavors));
-                        dist = attractionRotationMatrix * (otherState.xy - state.xy) / scale;
-                        distLength = length(dist);
-                        if (distLength < distanceCutoff) {
-                            continue;
-                        }
+                        vec4 otherState = allStates[i];
+                        vec2 dist = getDistance(state.xy, otherState.xy);
+                        dist = attractionRotationMatrix * dist / scale / flavorAttractionScale;
+                        float distLength = length(dist);
+                        if (distLength < distanceCutoff) { continue; }
+                        int otherFlavor = getFlavor(otherState);
                         if (distLength < 0.10) {
                             accel += dist
                                 / distLength
@@ -210,7 +219,7 @@
                             state.xy = (85.0 * state.xy + 15.0 * otherState.xy) / 100.0;
                         }
                         accel += dist.xy
-                            / pow(distLength, 4.0)
+                            / pow(distLength, flavorAttractionPower)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0)
                             / weight;
@@ -219,6 +228,35 @@
                         accel *= vec2(maxAccel / length(accel));
                     }
                     velocity.xy += accel;
+                }
+
+                // Keep particles inside the universe
+                if (cyclicalGeometry) {
+                    for (int dimension = 0; dimension < 2; dimension++) {
+                        if (state[dimension] < -1.0)
+                            state[dimension] += 2.0;
+                        else if (state[dimension] > 1.0)
+                            state[dimension] -= 2.0;
+                    }
+                }
+                else {
+                    for (int dimension = 0; dimension < 2; dimension++) {
+                        if (state[dimension] < -1.0) {
+                            state[dimension] = -1.0;
+                            velocity[dimension] *= -bounceDampeningFactor;
+                            velocity[1 - dimension] *= bounceDampeningFactor;
+                        }
+                        else if (state[dimension] > 1.0) {
+                            state[dimension] = 1.0;
+                            velocity[dimension] *= -bounceDampeningFactor;
+                            velocity[1 - dimension] *= bounceDampeningFactor;
+                        }
+                    }
+                }
+
+                // Limit velocity
+                if (length(velocity.xy) > maxV) {
+                    velocity.xy *= vec2(maxV / length(velocity.xy));
                 }
 
                 // Movement towards the mouse pointer
@@ -230,33 +268,14 @@
                             velocity.xy *= 1.0 - pointerSlowFactor * (1.0 - dist);
                         }
                         if (pointerPullFactor != 0.0) {
-                            velocity.xy += pointerPullFactor * (userInput.xy - state.xy) * dist;
+                            velocity.xy += pointerPullFactor * (userInput.xy - state.xy)
+                                * dist / simulationSpeed;
                         }
                     }
                 }
 
-                // Movement towards the bottom
-                velocity.y -= floorGravity;
-
-                // Keep particles inside the universe
-                for (int dimension = 0; dimension < 2; dimension++) {
-                    if (state[dimension] < -1.0) {
-                        state[dimension] = -1.0;
-                        velocity[dimension] *= -bounceDampeningFactor;
-                    }
-                    else if (state[dimension] > 1.0) {
-                        state[dimension] = 1.0;
-                        velocity[dimension] *= -bounceDampeningFactor;
-                    }
-                }
-
-                // Limit velocity
-                if (length(velocity.xy) > maxV) {
-                    velocity.xy *= vec2(maxV / length(velocity.xy));
-                }
-
                 // Limit energy
-                //if (state.z > 1.0) { state.z = 1.0; }
+                if (state.z > 1.0) { state.z = 1.0; }
             }
         </script>
         <script type="application/javascript" id="boilerplate">
@@ -267,10 +286,8 @@
             function main(param) {
                 const canvas = document.querySelector('#canvas');
                 const gl = canvas.getContext('webgl2');
-                if (!gl) {
-                    alert('Unable to initialize WebGL. Your browser or machine may not support it.');
-                    return;
-                }
+                if (!gl)
+                    return alert('Unable to initialize WebGL. Your browser/machine may not support it.');
 
                 param.particleLimit = Math.min(param.particleLimit,
                     gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS) - param.extraUniforms);
@@ -288,33 +305,29 @@
             }
 
             function initUI(gl, param) {
-                gl.canvas.addEventListener('pointermove', function(e) {
-                    const rect = canvas.getBoundingClientRect();
+                function updatePointer(e) {
+                    const rect = gl.canvas.getBoundingClientRect();
                     param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
                     param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
-                });
+                }
+                gl.canvas.addEventListener('pointermove', updatePointer);
                 gl.canvas.addEventListener('pointerdown', function(e) {
-                    const rect = canvas.getBoundingClientRect();
-                    param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
-                    param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
+                    updatePointer(e);
                     if (e.button === 0) {
                         param.pointerDown = true;
                         gl.canvas.setPointerCapture(e.pointerId);
                     }
                 });
                 gl.canvas.addEventListener('pointerup', function(e) {
-                    const rect = canvas.getBoundingClientRect();
-                    param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
-                    param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
+                    updatePointer(e);
                     if (e.button === 0) {
                         param.pointerDown = false;
                         gl.canvas.releasePointerCapture(e.pointerId);
                     }
                 });
                 window.addEventListener('keypress', function(e) {
-                    if (e.key === " ") {
+                    if (e.key === " ")
                         param.paused ^= true;
-                    }
                     else if (e.key === ".") {
                         param.paused = false;
                         param.pauseOnNextFrame = true;
@@ -434,9 +447,9 @@
                 // this function will call itself in a loop forever.
                 gl.clearColor(0.0, 0.0, 0.0, 1.0);
                 gl.clear(gl.COLOR_BUFFER_BIT);
-                if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
-                    canvas.width = canvas.clientWidth;
-                    canvas.height = canvas.clientHeight;
+                if (gl.canvas.width !== gl.canvas.clientWidth || gl.canvas.height !== gl.canvas.clientHeight) {
+                    gl.canvas.width = gl.canvas.clientWidth;
+                    gl.canvas.height = gl.canvas.clientHeight;
                     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
                 }
 
@@ -517,9 +530,8 @@
                             param.fpsCounter++;
                         }
                         drawScene(gl, shaderInfo, buffers, param);
-                    } else {
+                    } else
                         window.requestAnimationFrame(readShaderOutput);
-                    }
                 }
                 window.requestAnimationFrame(readShaderOutput);
             }
