@@ -64,7 +64,8 @@
             const float gravityPower = 4.0;
             const float gravityScale = 100.0; // scales the distance between particles
             const float strongAttraction = 0.05;
-            const float strongAttractionDistance = 0.06;
+            const float strongAttractionDistanceMax = 0.06;
+            const float strongAttractionDistanceMin = 0.00;
             const float flavorAttraction = -1.0;
             const float flavorAttractionPower = 4.0;
             const float flavorAttractionScale = 100.0; // scales the distance between particles
@@ -240,7 +241,8 @@
                     vec4 otherState = allStates[i];
                     vec2 dist = getDistance(state.xy, otherState.xy);
                     dist = attractionRotationMatrix * dist / scale;
-                    if (length(dist) < strongAttractionDistance) {
+                    if (length(dist) < strongAttractionDistanceMax
+                        && length(dist) > strongAttractionDistanceMin) {
                         state.xy += dist * strongAttraction;
                     }
                 }
