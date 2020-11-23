@@ -208,15 +208,13 @@
                         if (distLength < distanceCutoff) { continue; }
                         int otherFlavor = getFlavor(otherState);
                         if (distLength < 0.10) {
+                            /* more powerful force at close range */
                             accel += dist
                                 / distLength
                                 * pow((distLength * 10.0), 2.0)
                                 * flavorAttraction * 100000000.0
                                 * (flavor == otherFlavor ? repulsion : -1.0)
                                 / weight;
-                        }
-                        if (distLength < 0.04) {
-                            state.xy = (85.0 * state.xy + 15.0 * otherState.xy) / 100.0;
                         }
                         accel += dist.xy
                             / pow(distLength, flavorAttractionPower)
@@ -228,6 +226,17 @@
                         accel *= vec2(maxAccel / length(accel));
                     }
                     velocity.xy += accel;
+                }
+
+                // Super-strong close-range attraction
+                for (int i = 0; i < particleLimit; i++) {
+                    if (i == currentIndex) { continue; }
+                    vec4 otherState = allStates[i];
+                    vec2 dist = getDistance(state.xy, otherState.xy);
+                    dist = attractionRotationMatrix * dist / scale;
+                    if (length(dist) < 0.04) {
+                        state.xy += dist * 0.15;
+                    }
                 }
 
                 // Keep particles inside the universe
