@@ -330,10 +330,8 @@
             function main(param) {
                 const canvas = document.querySelector('#canvas');
                 const gl = canvas.getContext('webgl2');
-                if (!gl) {
-                    alert('Unable to initialize WebGL. Your browser or machine may not support it.');
-                    return;
-                }
+                if (!gl)
+                    return alert('Unable to initialize WebGL. Your browser/machine may not support it.');
 
                 param.particleLimit = Math.min(param.particleLimit,
                     gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS) - param.extraUniforms);
@@ -351,33 +349,29 @@
             }
 
             function initUI(gl, param) {
-                gl.canvas.addEventListener('pointermove', function(e) {
-                    const rect = canvas.getBoundingClientRect();
+                function updatePointer(e) {
+                    const rect = gl.canvas.getBoundingClientRect();
                     param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
                     param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
-                });
+                }
+                gl.canvas.addEventListener('pointermove', updatePointer);
                 gl.canvas.addEventListener('pointerdown', function(e) {
-                    const rect = canvas.getBoundingClientRect();
-                    param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
-                    param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
+                    updatePointer(e);
                     if (e.button === 0) {
                         param.pointerDown = true;
                         gl.canvas.setPointerCapture(e.pointerId);
                     }
                 });
                 gl.canvas.addEventListener('pointerup', function(e) {
-                    const rect = canvas.getBoundingClientRect();
-                    param.pointerX = (e.clientX - rect.left) / gl.canvas.clientWidth * 2 - 1;
-                    param.pointerY = ((e.clientY - rect.top) / gl.canvas.clientHeight * 2 - 1) * -1;
+                    updatePointer(e);
                     if (e.button === 0) {
                         param.pointerDown = false;
                         gl.canvas.releasePointerCapture(e.pointerId);
                     }
                 });
                 window.addEventListener('keypress', function(e) {
-                    if (e.key === " ") {
+                    if (e.key === " ")
                         param.paused ^= true;
-                    }
                     else if (e.key === ".") {
                         param.paused = false;
                         param.pauseOnNextFrame = true;
@@ -497,9 +491,9 @@
                 // this function will call itself in a loop forever.
                 gl.clearColor(0.0, 0.0, 0.0, 1.0);
                 gl.clear(gl.COLOR_BUFFER_BIT);
-                if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
-                    canvas.width = canvas.clientWidth;
-                    canvas.height = canvas.clientHeight;
+                if (gl.canvas.width !== gl.canvas.clientWidth || gl.canvas.height !== gl.canvas.clientHeight) {
+                    gl.canvas.width = gl.canvas.clientWidth;
+                    gl.canvas.height = gl.canvas.clientHeight;
                     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
                 }
 
@@ -580,9 +574,8 @@
                             param.fpsCounter++;
                         }
                         drawScene(gl, shaderInfo, buffers, param);
-                    } else {
+                    } else
                         window.requestAnimationFrame(readShaderOutput);
-                    }
                 }
                 window.requestAnimationFrame(readShaderOutput);
             }
