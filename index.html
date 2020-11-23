@@ -60,23 +60,23 @@
             #version 300 es
 
             // Physical Constants
-            const float gravity = 0.0;
-            const float gravityPower = 3.0;
-            const float gravityScale = 100000.0; // scales the distance between particles
+            const float gravity = 1000.0;
+            const float gravityPower = 4.0;
+            const float gravityScale = 100.0; // scales the distance between particles
             const float strongAttraction = 0.05;
-            const float strongAttractionDistance = 0.08;
-            const float flavorAttraction = -0.05;
+            const float strongAttractionDistance = 0.06;
+            const float flavorAttraction = -1.0;
             const float flavorAttractionPower = 4.0;
-            const float flavorAttractionScale = 1.0; // scales the distance between particles
-            const float numFlavors = 3.0;
+            const float flavorAttractionScale = 100.0; // scales the distance between particles
+            const float numFlavors = 9.0;
             const float bounceDampeningFactor = 0.99;
             const float maxAccel = 0.01;
             const float pointerRadius = 0.30;
             const float pointerSlowFactor = 0.0;
-            const float pointerPullFactor = 0.2;
+            const float pointerPullFactor = 0.02;
             const float energyGain = 0.0; // it's warmer at the top, and the particles will grow
             const float decayRate = 0.0; // chance that a particle randomly breaks
-            const float distanceCutoff = 0.000001;
+            const float distanceCutoff = 0.001;
             const float simulationSpeed = 1.0;
             const bool cyclicalGeometry = true; // Wrap around x- and y-coordinates on the edges?
 
@@ -94,7 +94,11 @@
                 vec3(0.0, 1.0, 1.0),
                 vec3(1.0, 0.8, 0.0),
                 vec3(0.0, 0.0, 1.0),
-                vec3(1.0, 0.0, 0.0)
+                vec3(1.0, 0.0, 0.0),
+                vec3(0.0, 1.0, 0.0),
+                vec3(0.5, 0.5, 0.5),
+                vec3(1.0, 1.0, 1.0),
+                vec3(0.5, 0.0, 1.0)
             );
 
             // Don't change the following line. The JavaScript code below will fill in this value
