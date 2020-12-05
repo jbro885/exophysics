@@ -127,7 +127,7 @@
                 // Gain/loss of energy
                 state.z += state.y * energyGain;
 
-                // Attraction of particles towards each other
+                // Attraction of particles towards a center of mass
                 if (particleGravity != 0.0) {
                     vec4 particle_pos;
                     vec4 center_of_mass;
@@ -142,6 +142,7 @@
                     newV.y -= dist.y * particleGravity;
                 }
 
+                // Attraction of particles towards each other
                 if (flavorAttraction != 0.0) {
                     float repulsion = pow(numFlavors - 1.0, 0.3);
                     vec4 otherState;
@@ -156,17 +157,6 @@
                             / pow(length(dist.xy), 2.5)
                             * flavorAttraction
                             * (flavor == otherFlavor ? repulsion : -1.0);
-
-                        //if (length(dist.xy) < 0.2) {
-                            //newV.xy += dist.xy
-                            //    * flavorAttraction
-                            //    / min(0.5, pow(length(dist.xy), 3.0))
-                            //    //* (0.3 - max(0.0, min(0.3, length(dist.xy))))
-                            //    * (abs(state.w - otherState.w) < 0.04 ? -1.0 : (numFlavors - 1.0));
-                            //if (length(dist.xy) < 0.01) {
-                                //state.w = (9.0 * state.w + otherState.w) / 10.0;
-                            //}
-                        //}
                     }
                 }
 
