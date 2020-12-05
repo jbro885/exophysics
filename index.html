@@ -64,7 +64,7 @@
 
             // tweakable parameters
             const float floorGravity = 0.0;
-            const float particleGravity = 0.0;
+            const float particleGravity = 0.00000000;
             const float flavorAttraction = -0.0000035;
             const float numFlavors = 5.0;
             const float bounceDampeningFactor = 0.99;
@@ -127,24 +127,19 @@
                 // Gain/loss of energy
                 state.z += state.y * energyGain;
 
-                // Attraction of particles towards a center of mass
-                // Note: This is not the same as gravity. See newer versions
-                //       for a better gravity formula.
+                // Attraction of particles towards each other
                 if (particleGravity != 0.0) {
-                    vec4 particle_pos;
-                    vec4 center_of_mass;
-                    center_of_mass = vec4(0.0, 0.0, 0.0, 0.0);
+                    vec4 otherState;
+                    vec2 dist;
                     for (int i = 0; i < particleLimit; i++) {
-                        particle_pos = allStates[i];
-                        center_of_mass += particle_pos;
+                        otherState = allStates[i];
+                        dist = otherState.xy - state.xy;
+                        if (length(dist) > 0.000001) {
+                            newV.xy += dist / pow(length(dist), 4.0) * particleGravity;
+                        }
                     }
-                    center_of_mass /= float(particleLimit);
-                    vec4 dist = allStates[currentIndex] - center_of_mass;
-                    newV.x -= dist.x * particleGravity;
-                    newV.y -= dist.y * particleGravity;
                 }
 
-                // Attraction of particles towards each other
                 if (flavorAttraction != 0.0) {
                     float repulsion = pow(numFlavors - 1.0, 0.3);
                     vec4 otherState;
