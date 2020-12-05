@@ -278,8 +278,11 @@
                     }
                 });
                 window.addEventListener('keypress', function(e) {
-                    if (e.key === " ") {
+                    if (e.key === " ")
                         param.paused ^= true;
+                    else if (e.key === ".") {
+                        param.paused = false;
+                        param.pauseOnNextFrame = true;
                     }
                 });
             }
@@ -407,6 +410,11 @@
                 var paused = (param.paused ? 1.0 : 0.0);
                 gl.uniform4fv(shaderInfo.uniforms.userInput, new Float32Array(
                     [param.pointerX, param.pointerY, button_pressed, paused]));
+
+                if (param.pauseOnNextFrame) {
+                    param.pauseOnNextFrame = false;
+                    param.paused = true;
+                }
 
                 // Set the random variable
                 var random = [...Array(param.particleLimit)].map(_=>(Math.random()));
