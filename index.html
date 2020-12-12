@@ -170,8 +170,8 @@
                     vec4 otherState = allStates[i];
                     vec2 dist = getDistance(state.xy, otherState.xy);
                     if (length(dist) < visionRadius && length(dist) > distanceCutoff) {
-                        float angle = atan(dist.y, dist.x);
-                        angle -= state.z;
+                        float angle = -atan(dist.y, dist.x);
+                        angle -= 0.8 * state.z;
                         angle = modulo2PI(angle);
                         if (angle < PI) {
                             neighbors_right++;
@@ -185,7 +185,7 @@
                 state.z += constantRotation + attractionRotation * float(total_neighbors) * float(sign(neighbors_left - neighbors_right));
 
                 // Colorize the particle
-                if (total_neighbors < 3)
+                if (total_neighbors == 0)
                     color.rgb = colors[0];
                 else if (total_neighbors < 18)
                     color.rgb = colors[1];
