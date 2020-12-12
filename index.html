@@ -151,7 +151,10 @@
 
                 gl_Position = vec4(state.xy, 0.0, 1.0);
                 gl_PointSize = 7.0;
-                float scale = 1.0;
+
+                // Logarithmic regression: https://keisan.casio.com/exec/system/14059930226691
+                // with f(2048)=1.0, f(1024)=0.9, f(512)=0.7, f(256)=0.475
+                float scale = -0.9175 + 0.2561 * log(float(particleLimit));
 
                 // Initialization, decay, and respawning of particles:
                 if (state.z == 0.0) {
@@ -169,7 +172,7 @@
                     if (i == currentIndex) continue;
                     vec4 otherState = allStates[i];
                     vec2 dist = getDistance(state.xy, otherState.xy);
-                    if (length(dist) < visionRadius && length(dist) > distanceCutoff) {
+                    if (length(dist) < visionRadius / scale && length(dist) > distanceCutoff) {
                         float angle = atan(dist.y, dist.x);
                         angle -= state.z;
                         angle = modulo2PI(angle);
@@ -195,7 +198,7 @@
                     color.rgb = colors[3];
 
                 // Movement
-                state.xy += speed * vec2(cos(state.z), sin(state.z));
+                state.xy += speed / scale * vec2(cos(state.z), sin(state.z));
 
                 // Keep the rotation between 0 and 2*PI
                 state.z = modulo2PI(state.z);
