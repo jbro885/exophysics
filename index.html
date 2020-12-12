@@ -51,7 +51,7 @@
         <canvas id="canvas" style="display: block; height: 100vh; width: 100vw;"></canvas>
         <script>
             var parameters = {
-                particleLimit: 1024,
+                particleLimit: 256,
                 extraUniforms: 1, // Besides "allStates", we use 1 more uniform: "userInput"
                 logFPS: true,
             }
@@ -63,10 +63,10 @@
             const float TAU = 2.0 * PI;
 
             // Physical Constants
-            const float speed = 0.01;
-            const float visionRadius = 0.1;
+            const float speed = 0.010;
+            const float visionRadius = 0.30;
             const float constantRotation = PI;
-            const float attractionRotation = PI / 360.0 * 17.0;
+            const float attractionRotation = PI / 360.0 * 20.0;
             const float distanceCutoff = 0.000001;
             const bool cyclicalGeometry = true; // Wrap around x- and y-coordinates on the edges?
 
@@ -170,10 +170,10 @@
                     vec4 otherState = allStates[i];
                     vec2 dist = getDistance(state.xy, otherState.xy);
                     if (length(dist) < visionRadius && length(dist) > distanceCutoff) {
-                        //float angle = -atan(dist.y, dist.x);
-                        float angle = state.z;
+                        float angle = atan(dist.y, dist.x);
+                        angle -= state.z;
                         angle = modulo2PI(angle);
-                        if (angle < PI) {
+                        if (angle > PI) {
                             neighbors_right++;
                         }
                         else {
@@ -185,11 +185,11 @@
                 state.z += constantRotation + attractionRotation * float(total_neighbors) * float(sign(neighbors_left - neighbors_right));
 
                 // Colorize the particle
-                if (total_neighbors == 0)
+                if (total_neighbors < 15)
                     color.rgb = colors[0];
-                else if (total_neighbors < 18)
+                else if (total_neighbors < 30)
                     color.rgb = colors[1];
-                else if (total_neighbors < 28)
+                else if (total_neighbors < 50)
                     color.rgb = colors[2];
                 else
                     color.rgb = colors[3];
