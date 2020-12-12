@@ -152,6 +152,9 @@
                 gl_Position = vec4(state.xy, 0.0, 1.0);
                 gl_PointSize = 7.0;
 
+                // Set the color. This line is duplicated, to work even when paused.
+                color.rgb = colors[int(state.w)];
+
                 // Logarithmic regression: https://keisan.casio.com/exec/system/14059930226691
                 // with f(2048)=1.0, f(1024)=0.9, f(512)=0.7, f(256)=0.475
                 float scale = -0.9175 + 0.2561 * log(float(particleLimit));
@@ -189,13 +192,14 @@
 
                 // Colorize the particle
                 if (total_neighbors < 15)
-                    color.rgb = colors[0];
+                    state.w = 0.0;
                 else if (total_neighbors < 30)
-                    color.rgb = colors[1];
+                    state.w = 1.0;
                 else if (total_neighbors < 50)
-                    color.rgb = colors[2];
+                    state.w = 2.0;
                 else
-                    color.rgb = colors[3];
+                    state.w = 3.0;
+                color.rgb = colors[int(state.w)];
 
                 // Movement
                 state.xy += speed / scale * vec2(cos(state.z), sin(state.z));
