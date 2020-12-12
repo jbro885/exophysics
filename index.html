@@ -170,8 +170,8 @@
                     vec4 otherState = allStates[i];
                     vec2 dist = getDistance(state.xy, otherState.xy);
                     if (length(dist) < visionRadius && length(dist) > distanceCutoff) {
-                        float angle = -atan(dist.y, dist.x);
-                        angle -= 0.8 * state.z;
+                        //float angle = -atan(dist.y, dist.x);
+                        float angle = state.z;
                         angle = modulo2PI(angle);
                         if (angle < PI) {
                             neighbors_right++;
