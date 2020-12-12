@@ -51,7 +51,7 @@
         <canvas id="canvas" style="display: block; height: 100vh; width: 100vw;"></canvas>
         <script>
             var parameters = {
-                particleLimit: 256,
+                particleLimit: 2048,
                 extraUniforms: 1, // Besides "allStates", we use 1 more uniform: "userInput"
                 logFPS: true,
             }
@@ -64,9 +64,9 @@
 
             // Physical Constants
             const float speed = 0.010;
-            const float visionRadius = 0.30;
+            const float visionRadius = 0.10;
             const float constantRotation = PI;
-            const float attractionRotation = PI / 360.0 * 20.0;
+            const float attractionRotation = PI / 360.0 * 36.0;
             const float distanceCutoff = 0.000001;
             const bool cyclicalGeometry = true; // Wrap around x- and y-coordinates on the edges?
 
